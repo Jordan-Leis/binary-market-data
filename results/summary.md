@@ -48,8 +48,8 @@ Per-connection compressor state, live heap after traffic: 376 KiB for permessage
 
 | Server | Byte-exact (7 hostile payloads, PUBLISH and SET/GET) | p50 / p99 publish-to-receive, 2000 msg/s | Pipelined ceiling, binary msgs/s |
 |---|---|---|---:|
-| dragonfly [0;32mv2.1-1bfc6b18e0e48a9a98c730c25c6c8e788eaf2d85[m | yes, all | 212 / 1009 us | 549,185 |
-| v=7.0.15 | yes, all | 196 / 939 us | 905,477 |
+| Dragonfly [0;32mv2.1 | yes, all | 212 / 1009 us | 549,185 |
+| Redis 7.0.15 | yes, all | 196 / 939 us | 905,477 |
 
 The synthetic whole feed is 1,960.0 messages per second.
 
