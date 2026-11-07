@@ -1,0 +1,16 @@
+[package]
+name = "mdbin"
+description = "Compact binary encoding for exchange market data and signed orders, with exact JSON round trips"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+sha3.workspace = true
+k256.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
