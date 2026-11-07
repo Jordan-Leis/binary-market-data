@@ -449,7 +449,6 @@ impl Feed {
         let und = &UNDERLYINGS[ins.under];
         let pd = und.price_dp;
         let spot = self.spots[ins.under];
-        let unit = 10f64.powi(pd as i32);
         let (ba, aa) = (ins.bids.first().copied().unwrap_or((0, 0)), ins.asks.first().copied().unwrap_or((0, 0)));
         let (mark, funding, pricing) = match &ins.option {
             None => (spot * 1.0002, format!("\"{}\"", fmt_f(0.0000125 + (spot / self.spot0[ins.under] - 1.0) * 1e-4, 8)), "null".to_owned()),
