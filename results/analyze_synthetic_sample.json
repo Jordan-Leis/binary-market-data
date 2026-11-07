@@ -1,0 +1,33 @@
+{
+  "families": {
+    "orderbook": {
+      "mean_bytes": 305.6938202247191,
+      "median_ms_between_messages_per_channel": 100,
+      "messages": 1780,
+      "numeric_values": 3560,
+      "string_values": 23188
+    },
+    "ticker_slim": {
+      "mean_bytes": 607.6741573033707,
+      "median_ms_between_messages_per_channel": null,
+      "messages": 178,
+      "numeric_values": 534,
+      "string_values": 4608
+    },
+    "trades": {
+      "mean_bytes": 550.0,
+      "median_ms_between_messages_per_channel": null,
+      "messages": 2,
+      "numeric_values": 4,
+      "string_values": 28
+    }
+  },
+  "input": "data/synthetic/sample.jsonl",
+  "orderbook": {
+    "every_message_carries_full_levels": "yes by schema: bids and asks are arrays of [price, amount]",
+    "median_levels_per_side": 3,
+    "messages": 1780,
+    "publish_id_step_is_1_fraction": 1.0,
+    "unchanged_vs_previous_on_same_channel": 0.7679775280898876
+  }
+}

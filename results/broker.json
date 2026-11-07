@@ -1,0 +1,183 @@
+{
+  "binary_tick_frame_bytes": 17055,
+  "label": "MEASURED on this machine's loopback with SYNTHETIC payloads. Not network latency.",
+  "mean_binary_message_bytes": 23.336224489795917,
+  "mean_json_message_bytes": 333.36785714285713,
+  "servers": {
+    "dragonfly": {
+      "byte_exactness": {
+        "all_256_byte_values": {
+          "bytes": 256,
+          "publish_exact": true,
+          "set_get_exact": true
+        },
+        "crlf_and_resp_lookalikes": {
+          "bytes": 30,
+          "publish_exact": true,
+          "set_get_exact": true
+        },
+        "empty": {
+          "bytes": 0,
+          "publish_exact": true,
+          "set_get_exact": true
+        },
+        "invalid_utf8": {
+          "bytes": 10,
+          "publish_exact": true,
+          "set_get_exact": true
+        },
+        "nul_bytes_only": {
+          "bytes": 64,
+          "publish_exact": true,
+          "set_get_exact": true
+        },
+        "random_1_mib": {
+          "bytes": 1048576,
+          "publish_exact": true,
+          "set_get_exact": true
+        },
+        "real_binary_frame": {
+          "bytes": 17055,
+          "publish_exact": true,
+          "set_get_exact": true
+        }
+      },
+      "pipelined_ceiling_one_subscriber": {
+        "binary_messages": {
+          "published": 200000,
+          "received": 200000,
+          "received_msgs_per_s": 549185.0,
+          "seconds": 0.364176079
+        },
+        "json_messages": {
+          "published": 200000,
+          "received": 200000,
+          "received_msgs_per_s": 458621.0,
+          "seconds": 0.43608973
+        }
+      },
+      "publish_to_receive_loopback": {
+        "binary_messages_2000_per_s": {
+          "max_us": 5890.222,
+          "mean_payload_bytes": 31.2327,
+          "p50_us": 212.201,
+          "p999_us": 3355.513,
+          "p99_us": 1008.804,
+          "rate_msgs_per_s": 2000,
+          "received": 10000,
+          "sent": 10000
+        },
+        "binary_tick_frames_10_per_s": {
+          "max_us": 3451.512,
+          "mean_payload_bytes": 17063.0,
+          "p50_us": 1058.003,
+          "p999_us": 3451.512,
+          "p99_us": 1970.207,
+          "rate_msgs_per_s": 10,
+          "received": 100,
+          "sent": 100
+        },
+        "json_messages_2000_per_s": {
+          "max_us": 6478.523,
+          "mean_payload_bytes": 340.8164,
+          "p50_us": 211.101,
+          "p999_us": 4603.916,
+          "p99_us": 1220.305,
+          "rate_msgs_per_s": 2000,
+          "received": 10000,
+          "sent": 10000
+        }
+      },
+      "tested": true,
+      "version": "dragonfly \u001b[0;32mv2.1-1bfc6b18e0e48a9a98c730c25c6c8e788eaf2d85\u001b[m"
+    },
+    "redis": {
+      "byte_exactness": {
+        "all_256_byte_values": {
+          "bytes": 256,
+          "publish_exact": true,
+          "set_get_exact": true
+        },
+        "crlf_and_resp_lookalikes": {
+          "bytes": 30,
+          "publish_exact": true,
+          "set_get_exact": true
+        },
+        "empty": {
+          "bytes": 0,
+          "publish_exact": true,
+          "set_get_exact": true
+        },
+        "invalid_utf8": {
+          "bytes": 10,
+          "publish_exact": true,
+          "set_get_exact": true
+        },
+        "nul_bytes_only": {
+          "bytes": 64,
+          "publish_exact": true,
+          "set_get_exact": true
+        },
+        "random_1_mib": {
+          "bytes": 1048576,
+          "publish_exact": true,
+          "set_get_exact": true
+        },
+        "real_binary_frame": {
+          "bytes": 17055,
+          "publish_exact": true,
+          "set_get_exact": true
+        }
+      },
+      "pipelined_ceiling_one_subscriber": {
+        "binary_messages": {
+          "published": 200000,
+          "received": 200000,
+          "received_msgs_per_s": 905477.0,
+          "seconds": 0.220878175
+        },
+        "json_messages": {
+          "published": 200000,
+          "received": 200000,
+          "received_msgs_per_s": 603534.0,
+          "seconds": 0.331381363
+        }
+      },
+      "publish_to_receive_loopback": {
+        "binary_messages_2000_per_s": {
+          "max_us": 1393.205,
+          "mean_payload_bytes": 31.2327,
+          "p50_us": 195.501,
+          "p999_us": 1079.104,
+          "p99_us": 938.703,
+          "rate_msgs_per_s": 2000,
+          "received": 10000,
+          "sent": 10000
+        },
+        "binary_tick_frames_10_per_s": {
+          "max_us": 1298.204,
+          "mean_payload_bytes": 17063.0,
+          "p50_us": 308.801,
+          "p999_us": 1298.204,
+          "p99_us": 1261.904,
+          "rate_msgs_per_s": 10,
+          "received": 100,
+          "sent": 100
+        },
+        "json_messages_2000_per_s": {
+          "max_us": 1356.205,
+          "mean_payload_bytes": 340.8164,
+          "p50_us": 195.701,
+          "p999_us": 1068.104,
+          "p99_us": 957.604,
+          "rate_msgs_per_s": 2000,
+          "received": 10000,
+          "sent": 10000
+        }
+      },
+      "tested": true,
+      "version": "Redis server v=7.0.15 sha=00000000:0 malloc=jemalloc-5.3.0 bits=64 build=d064f9f48c901a92"
+    }
+  },
+  "synthetic_feed_messages_per_s": 1960.0
+}

@@ -1,0 +1,7 @@
+{
+  "frames_accepted": 145858,
+  "frames_rejected": 1854142,
+  "iterations": 2000000,
+  "mutations": "byte flips, truncation, junk insertion, random frames; seeded",
+  "panics": 0
+}

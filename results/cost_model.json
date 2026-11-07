@@ -1,0 +1,353 @@
+{
+  "label": "MODEL. Byte ratios measured on SYNTHETIC data; prices are public list prices checked 2026-11-07 (upper bound); bills are illustrative.",
+  "assumptions": {
+    "all_of_the_bill_is_market_data_egress_via_one_nlb": true,
+    "relay_monthly_capacity_tb": 100.0,
+    "relay_included_tb": 1.0,
+    "direct_connect_port_max_utilisation": 0.5,
+    "orders_per_second_for_order_lever": 1000
+  },
+  "whole_feed_json_gb_per_subscriber_month": 1732.664052,
+  "scenarios": [
+    {
+      "illustrative_bill_usd": 1000,
+      "implied_gb_per_month": 10339.322916666666,
+      "implied_whole_feed_json_subscribers": 5.967298106480635,
+      "rows": [
+        {
+          "lever": "Today: JSON over AWS egress",
+          "kind": "baseline",
+          "monthly_usd": 999.9999999999999,
+          "note": "",
+          "saving_vs_today_usd": 0.0
+        },
+        {
+          "lever": "Binary, full snapshots",
+          "kind": "measured",
+          "ratio": 0.1472848309372574,
+          "monthly_usd": 153.61624106754826,
+          "note": "bytes x0.147 (regimes 0.147-0.148)",
+          "saving_vs_today_usd": 846.3837589324517
+        },
+        {
+          "lever": "Binary + deltas (exact)",
+          "kind": "measured",
+          "ratio": 0.07001107825743338,
+          "monthly_usd": 76.91624600137195,
+          "note": "bytes x0.070 (regimes 0.062-0.087); one-instrument subscribers, wire model: x0.225",
+          "saving_vs_today_usd": 923.0837539986279
+        },
+        {
+          "lever": "+ skip unchanged books",
+          "kind": "measured",
+          "ratio": 0.03963454895536158,
+          "monthly_usd": 46.765262429368015,
+          "note": "bytes x0.040 (regimes 0.028-0.064)",
+          "saving_vs_today_usd": 953.2347375706319
+        },
+        {
+          "lever": "+ conflate books to 1 s (opt-in)",
+          "kind": "measured",
+          "ratio": 0.030383885483417902,
+          "monthly_usd": 37.58328513370353,
+          "note": "bytes x0.030 (regimes 0.026-0.035)",
+          "saving_vs_today_usd": 962.4167148662964
+        },
+        {
+          "lever": "JSON + permessage-deflate",
+          "kind": "measured",
+          "ratio": 0.24525273513439616,
+          "monthly_usd": 250.85673357602326,
+          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~25 ms CPU per connection-second (~0.1 cores at this scale) and ~376 KiB per connection",
+          "saving_vs_today_usd": 749.1432664239767
+        },
+        {
+          "lever": "JSON + zstd dictionary",
+          "kind": "measured",
+          "ratio": 0.2766369348860151,
+          "monthly_usd": 282.00790564448636,
+          "note": "bytes x0.277 (regimes 0.262-0.279); not a WebSocket standard, so every client needs a custom decoder",
+          "saving_vs_today_usd": 717.9920943555135
+        },
+        {
+          "lever": "Direct Connect to the CDN",
+          "kind": "modelled",
+          "monthly_usd": 504.2473958333333,
+          "note": "$0.02/GB + 1G port + NLB; PLUS UNKNOWN Cloudflare interconnect (Enterprise-only, no public price) and colocation fees",
+          "unknown_extra": true,
+          "saving_vs_today_usd": 495.7526041666666
+        },
+        {
+          "lever": "CloudFront instead of current CDN",
+          "kind": "modelled",
+          "monthly_usd": 956.8067708333334,
+          "note": "AWS to CloudFront is $0/GB; CloudFront US list tiers; replaces the CDN's WAF/DDoS role; flat-rate plans cap at 50 TB unless re-priced (UNKNOWN)",
+          "saving_vs_today_usd": 43.19322916666647
+        },
+        {
+          "lever": "Relay tier outside AWS (JSON)",
+          "kind": "modelled",
+          "monthly_usd": 454.1888920269688,
+          "note": "2 relays on Hetzner at list price; AWS sends one feed copy per relay (3465 GB); relay overage $10",
+          "detail": {
+            "relays": 2,
+            "aws_gb": 3465.328104,
+            "relay_servers_usd": 104.376,
+            "relay_overage_usd": 9.71639404296875
+          },
+          "saving_vs_today_usd": 545.8111079730311
+        },
+        {
+          "lever": "Binary + deltas AND relay tier",
+          "kind": "modelled",
+          "monthly_usd": 135.09169027937543,
+          "note": "2 relays; clients get binary. Serving JSON clients from relays would add relay egress",
+          "detail": {
+            "relays": 2,
+            "aws_gb": 242.61135707682726,
+            "relay_servers_usd": 104.376,
+            "relay_overage_usd": 0.0
+          },
+          "saving_vs_today_usd": 864.9083097206244
+        },
+        {
+          "lever": "Binary orders",
+          "kind": "modelled",
+          "monthly_usd": 994.1646258639998,
+          "note": "inbound transfer is $0/GB, so only NLB processing changes: 973 GB/month fewer at 1000 orders/s saves $5.84",
+          "saving_vs_today_usd": 5.835374136000041
+        }
+      ]
+    },
+    {
+      "illustrative_bill_usd": 10000,
+      "implied_gb_per_month": 120675.98684210524,
+      "implied_whole_feed_json_subscribers": 69.64765425981449,
+      "rows": [
+        {
+          "lever": "Today: JSON over AWS egress",
+          "kind": "baseline",
+          "monthly_usd": 9999.999999999998,
+          "note": "",
+          "saving_vs_today_usd": 0.0
+        },
+        {
+          "lever": "Binary, full snapshots",
+          "kind": "measured",
+          "ratio": 0.1472848309372574,
+          "monthly_usd": 1676.535551140581,
+          "note": "bytes x0.147 (regimes 0.147-0.148)",
+          "saving_vs_today_usd": 8323.464448859417
+        },
+        {
+          "lever": "Binary + deltas (exact)",
+          "kind": "measured",
+          "ratio": 0.07001107825743338,
+          "monthly_usd": 818.4959720251805,
+          "note": "bytes x0.070 (regimes 0.062-0.087); one-instrument subscribers, wire model: x0.225",
+          "saving_vs_today_usd": 9181.504027974817
+        },
+        {
+          "lever": "+ skip unchanged books",
+          "kind": "measured",
+          "ratio": 0.03963454895536158,
+          "monthly_usd": 466.58707759007905,
+          "note": "bytes x0.040 (regimes 0.028-0.064)",
+          "saving_vs_today_usd": 9533.41292240992
+        },
+        {
+          "lever": "+ conflate books to 1 s (opt-in)",
+          "kind": "measured",
+          "ratio": 0.030383885483417902,
+          "monthly_usd": 359.4191150216612,
+          "note": "bytes x0.030 (regimes 0.026-0.035)",
+          "saving_vs_today_usd": 9640.580884978337
+        },
+        {
+          "lever": "JSON + permessage-deflate",
+          "kind": "measured",
+          "ratio": 0.24525273513439616,
+          "monthly_usd": 2752.3715412642528,
+          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~25 ms CPU per connection-second (~1.7 cores at this scale) and ~376 KiB per connection",
+          "saving_vs_today_usd": 7247.628458735746
+        },
+        {
+          "lever": "JSON + zstd dictionary",
+          "kind": "measured",
+          "ratio": 0.2766369348860151,
+          "monthly_usd": 3097.017595405403,
+          "note": "bytes x0.277 (regimes 0.262-0.279); not a WebSocket standard, so every client needs a custom decoder",
+          "saving_vs_today_usd": 6902.982404594595
+        },
+        {
+          "lever": "Direct Connect to the CDN",
+          "kind": "modelled",
+          "monthly_usd": 3373.0006578947364,
+          "note": "$0.02/GB + 1G port + NLB; PLUS UNKNOWN Cloudflare interconnect (Enterprise-only, no public price) and colocation fees",
+          "unknown_extra": true,
+          "saving_vs_today_usd": 6626.999342105262
+        },
+        {
+          "lever": "CloudFront instead of current CDN",
+          "kind": "modelled",
+          "monthly_usd": 9056.240131578945,
+          "note": "AWS to CloudFront is $0/GB; CloudFront US list tiers; replaces the CDN's WAF/DDoS role; flat-rate plans cap at 50 TB unless re-priced (UNKNOWN)",
+          "saving_vs_today_usd": 943.7598684210534
+        },
+        {
+          "lever": "Relay tier outside AWS (JSON)",
+          "kind": "modelled",
+          "monthly_usd": 583.4896700645921,
+          "note": "2 relays on Hetzner at list price; AWS sends one feed copy per relay (3465 GB); relay overage $139",
+          "detail": {
+            "relays": 2,
+            "aws_gb": 3465.328104,
+            "relay_servers_usd": 104.376,
+            "relay_overage_usd": 139.01717208059208
+          },
+          "saving_vs_today_usd": 9416.510329935407
+        },
+        {
+          "lever": "Binary + deltas AND relay tier",
+          "kind": "modelled",
+          "monthly_usd": 142.59245898085467,
+          "note": "2 relays; clients get binary. Serving JSON clients from relays would add relay egress",
+          "detail": {
+            "relays": 2,
+            "aws_gb": 242.61135707682726,
+            "relay_servers_usd": 104.376,
+            "relay_overage_usd": 7.500768701479255
+          },
+          "saving_vs_today_usd": 9857.407541019144
+        },
+        {
+          "lever": "Binary orders",
+          "kind": "modelled",
+          "monthly_usd": 9994.164625863998,
+          "note": "inbound transfer is $0/GB, so only NLB processing changes: 973 GB/month fewer at 1000 orders/s saves $5.84",
+          "saving_vs_today_usd": 5.83537413600061
+        }
+      ]
+    },
+    {
+      "illustrative_bill_usd": 30000,
+      "implied_gb_per_month": 466024.55357142846,
+      "implied_whole_feed_json_subscribers": 268.96417284902986,
+      "rows": [
+        {
+          "lever": "Today: JSON over AWS egress",
+          "kind": "baseline",
+          "monthly_usd": 29999.999999999996,
+          "note": "",
+          "saving_vs_today_usd": 0.0
+        },
+        {
+          "lever": "Binary, full snapshots",
+          "kind": "measured",
+          "ratio": 0.1472848309372574,
+          "monthly_usd": 6045.139416488782,
+          "note": "bytes x0.147 (regimes 0.147-0.148)",
+          "saving_vs_today_usd": 23954.860583511214
+        },
+        {
+          "lever": "Binary + deltas (exact)",
+          "kind": "measured",
+          "ratio": 0.07001107825743338,
+          "monthly_usd": 3028.1712155877008,
+          "note": "bytes x0.070 (regimes 0.062-0.087); one-instrument subscribers, wire model: x0.225",
+          "saving_vs_today_usd": 26971.828784412297
+        },
+        {
+          "lever": "+ skip unchanged books",
+          "kind": "measured",
+          "ratio": 0.03963454895536158,
+          "monthly_usd": 1739.9562414463846,
+          "note": "bytes x0.040 (regimes 0.028-0.064)",
+          "saving_vs_today_usd": 28260.043758553613
+        },
+        {
+          "lever": "+ conflate books to 1 s (opt-in)",
+          "kind": "measured",
+          "ratio": 0.030383885483417902,
+          "monthly_usd": 1347.651936803946,
+          "note": "bytes x0.030 (regimes 0.026-0.035)",
+          "saving_vs_today_usd": 28652.348063196052
+        },
+        {
+          "lever": "JSON + permessage-deflate",
+          "kind": "measured",
+          "ratio": 0.24525273513439616,
+          "monthly_usd": 9514.953526641588,
+          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~25 ms CPU per connection-second (~6.7 cores at this scale) and ~376 KiB per connection",
+          "saving_vs_today_usd": 20485.04647335841
+        },
+        {
+          "lever": "JSON + zstd dictionary",
+          "kind": "measured",
+          "ratio": 0.2766369348860151,
+          "monthly_usd": 10626.514910203387,
+          "note": "bytes x0.277 (regimes 0.262-0.279); not a WebSocket standard, so every client needs a custom decoder",
+          "saving_vs_today_usd": 19373.48508979661
+        },
+        {
+          "lever": "Direct Connect to the CDN",
+          "kind": "modelled",
+          "monthly_usd": 13775.56339285714,
+          "note": "$0.02/GB + 1x10G port + NLB; PLUS UNKNOWN Cloudflare interconnect (Enterprise-only, no public price) and colocation fees",
+          "unknown_extra": true,
+          "saving_vs_today_usd": 16224.436607142856
+        },
+        {
+          "lever": "CloudFront instead of current CDN",
+          "kind": "modelled",
+          "monthly_usd": 25600.754464285714,
+          "note": "AWS to CloudFront is $0/GB; CloudFront US list tiers; replaces the CDN's WAF/DDoS role; flat-rate plans cap at 50 TB unless re-priced (UNKNOWN)",
+          "saving_vs_today_usd": 4399.245535714283
+        },
+        {
+          "lever": "Relay tier outside AWS (JSON)",
+          "kind": "modelled",
+          "monthly_usd": 1640.1662686765178,
+          "note": "5 relays on Hetzner at list price; AWS sends one feed copy per relay (8663 GB); relay overage $540",
+          "detail": {
+            "relays": 5,
+            "aws_gb": 8663.32026,
+            "relay_servers_usd": 260.94,
+            "relay_overage_usd": 540.1225237165177
+          },
+          "saving_vs_today_usd": 28359.833731323477
+        },
+        {
+          "lever": "Binary + deltas AND relay tier",
+          "kind": "modelled",
+          "monthly_usd": 170.92631702543957,
+          "note": "2 relays; clients get binary. Serving JSON clients from relays would add relay egress",
+          "detail": {
+            "relays": 2,
+            "aws_gb": 242.61135707682726,
+            "relay_servers_usd": 104.376,
+            "relay_overage_usd": 35.83462674606414
+          },
+          "saving_vs_today_usd": 29829.07368297456
+        },
+        {
+          "lever": "Binary orders",
+          "kind": "modelled",
+          "monthly_usd": 29994.164625863996,
+          "note": "inbound transfer is $0/GB, so only NLB processing changes: 973 GB/month fewer at 1000 orders/s saves $5.84",
+          "saving_vs_today_usd": 5.83537413600061
+        }
+      ]
+    }
+  ],
+  "other_providers": {
+    "relay_host_egress_usd_per_tb_list": {
+      "aws_us_east_1_first_tier": 92.16,
+      "hetzner_overage": 1.2,
+      "oracle_after_10tb": 8.704,
+      "digitalocean_over_pool": 10.24,
+      "gcp_premium_na_10tib_plus": 81.92
+    },
+    "note": "Per-TB list prices for the host of a relay tier. Matching stays in AWS, near co-located clients."
+  }
+}

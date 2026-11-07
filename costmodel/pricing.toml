@@ -1,0 +1,60 @@
+# List prices used by cost_model.py. All checked on 2026-11-07.
+# These are public list prices, so they are an UPPER BOUND: negotiated or
+# committed-use discounts would lower every AWS figure here.
+# Region: us-east-1 unless stated.
+
+checked = "2026-11-07"
+
+[aws_egress]
+source = "AWS Price List API, AWSDataTransfer/current/us-east-1/index.json (publication 2026-11-03), 'AWS Outbound' US East (N. Virginia) -> External"
+free_tier_gb = 100           # "beyond the global free tier"; the 100 GB figure is AWS's published free tier
+tiers_gb = [10240, 51200, 153600]
+tier_usd_per_gb = [0.09, 0.085, 0.07, 0.05]
+inbound_usd_per_gb = 0.0     # 'AWS Inbound' External -> US East: "$0.000 per GB - data transfer in per month"
+
+[aws_nlb]
+source = "AWS Price List API, AWSELB/current/us-east-1/index.json (publication 2026-11-05); NLCU dimensions from aws.amazon.com/elasticloadbalancing/pricing/"
+usd_per_hour = 0.0225
+usd_per_nlcu_hour = 0.006
+gb_per_nlcu_hour = 1.0       # TCP: 1 GB/hour processed, 800 new conn/s, 100,000 active conn per NLCU; billed on the highest
+hours_per_month = 730
+
+[aws_direct_connect]
+source = "AWS Price List API, AWSDirectConnect/current/us-east-1/index.json (publication 2026-10-23), Equinix DC1-DC6 & DC10-DC11 (Ashburn)"
+usd_per_gb_out = 0.02
+port_1g_usd_per_hour = 0.30
+port_10g_usd_per_hour = 2.25
+note = "Needs a physical cross-connect to the CDN. Cloudflare Network Interconnect is listed as 'Enterprise-only' with no public price: UNKNOWN. Colocation and cross-connect fees: UNKNOWN."
+
+[aws_cloudfront]
+source = "AWS Price List API, AmazonCloudFront/current/index.json (publication 2026-10-19); flat-rate plans from aws.amazon.com/cloudfront/pricing/; WebSockets from the CloudFront developer guide"
+origin_to_cloudfront_usd_per_gb = 0.0   # "$0.00 per GB data transfer out of US East (Northern Virginia) to CloudFront"
+us_tiers_gb = [10240, 51200, 153600, 512000, 1048576, 5242880]
+us_tier_usd_per_gb = [0.085, 0.080, 0.060, 0.040, 0.030, 0.025, 0.020]
+flat_rate_plans_usd = { free = 0, pro = 15, business = 200, premium = 1000 }
+flat_rate_data_allowance = "100 GB / 50 TB / 50 TB / 50 TB, 'configurable up to 600TB for a new flat-rate price' (that price is UNKNOWN)"
+websocket = "Supported on any distribution (developer guide). Whether WebSocket traffic counts against flat-rate allowances: UNKNOWN."
+note = "Replaces the current CDN's role (TLS termination, WAF, DDoS). Not modelled: request charges for WebSocket connections."
+
+[hetzner]
+source = "docs.hetzner.com/robot/general/traffic/ (last change 2024-05-21) and hetzner.com/cloud"
+overage_eur_per_tb = 1.0
+overage_usd_per_tb_as_stated = 1.20     # Hetzner's own text: "EUR 1 ($1.20)/TB"
+cloud_included_tb_us = "1-5 TB (CPX), 1-8 TB (CCX), depending on plan"
+cloud_included_tb_eu = "20 TB (CX, CPX, CAX); 20-60 TB (CCX)"
+dedicated_1g = "unlimited traffic"
+dedicated_vcpu_cloud_from_eur_per_month = 43.49   # 'Dedicated vCPUs ... starting from EUR 43.49 per month' on hetzner.com/cloud
+eur_to_usd = 1.20                                  # from Hetzner's own EUR/USD pairing above, not a market rate
+
+[oracle]
+source = "Oracle price list API (cetools) part B88327, lastUpdated 2026-11-02"
+free_gb = 10240
+usd_per_gb_after = 0.0085
+
+[digitalocean]
+source = "docs.digitalocean.com/platform/billing/bandwidth/"
+usd_per_gib_over_pool = 0.01
+
+[gcp]
+source = "cloud.google.com/vpc/network-pricing, Premium Tier, to North America"
+usd_per_gib = [0.12, 0.11, 0.08]   # 1 GiB-1 TiB, 1-10 TiB, 10 TiB+

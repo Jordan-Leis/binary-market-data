@@ -1,0 +1,37 @@
+illustrative_bill_usd,lever,kind,monthly_usd,saving_vs_today_usd,note
+1000,Today: JSON over AWS egress,baseline,1000,0,
+1000,"Binary, full snapshots",measured,154,846,bytes x0.147 (regimes 0.147-0.148)
+1000,Binary + deltas (exact),measured,77,923,"bytes x0.070 (regimes 0.062-0.087); one-instrument subscribers, wire model: x0.225"
+1000,+ skip unchanged books,measured,47,953,bytes x0.040 (regimes 0.028-0.064)
+1000,+ conflate books to 1 s (opt-in),measured,38,962,bytes x0.030 (regimes 0.026-0.035)
+1000,JSON + permessage-deflate,measured,251,749,"bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~25 ms CPU per connection-second (~0.1 cores at this scale) and ~376 KiB per connection"
+1000,JSON + zstd dictionary,measured,282,718,"bytes x0.277 (regimes 0.262-0.279); not a WebSocket standard, so every client needs a custom decoder"
+1000,Direct Connect to the CDN,modelled,504,496,"$0.02/GB + 1G port + NLB; PLUS UNKNOWN Cloudflare interconnect (Enterprise-only, no public price) and colocation fees"
+1000,CloudFront instead of current CDN,modelled,957,43,AWS to CloudFront is $0/GB; CloudFront US list tiers; replaces the CDN's WAF/DDoS role; flat-rate plans cap at 50 TB unless re-priced (UNKNOWN)
+1000,Relay tier outside AWS (JSON),modelled,454,546,2 relays on Hetzner at list price; AWS sends one feed copy per relay (3465 GB); relay overage $10
+1000,Binary + deltas AND relay tier,modelled,135,865,2 relays; clients get binary. Serving JSON clients from relays would add relay egress
+1000,Binary orders,modelled,994,6,"inbound transfer is $0/GB, so only NLB processing changes: 973 GB/month fewer at 1000 orders/s saves $5.84"
+10000,Today: JSON over AWS egress,baseline,10000,0,
+10000,"Binary, full snapshots",measured,1677,8323,bytes x0.147 (regimes 0.147-0.148)
+10000,Binary + deltas (exact),measured,818,9182,"bytes x0.070 (regimes 0.062-0.087); one-instrument subscribers, wire model: x0.225"
+10000,+ skip unchanged books,measured,467,9533,bytes x0.040 (regimes 0.028-0.064)
+10000,+ conflate books to 1 s (opt-in),measured,359,9641,bytes x0.030 (regimes 0.026-0.035)
+10000,JSON + permessage-deflate,measured,2752,7248,"bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~25 ms CPU per connection-second (~1.7 cores at this scale) and ~376 KiB per connection"
+10000,JSON + zstd dictionary,measured,3097,6903,"bytes x0.277 (regimes 0.262-0.279); not a WebSocket standard, so every client needs a custom decoder"
+10000,Direct Connect to the CDN,modelled,3373,6627,"$0.02/GB + 1G port + NLB; PLUS UNKNOWN Cloudflare interconnect (Enterprise-only, no public price) and colocation fees"
+10000,CloudFront instead of current CDN,modelled,9056,944,AWS to CloudFront is $0/GB; CloudFront US list tiers; replaces the CDN's WAF/DDoS role; flat-rate plans cap at 50 TB unless re-priced (UNKNOWN)
+10000,Relay tier outside AWS (JSON),modelled,583,9417,2 relays on Hetzner at list price; AWS sends one feed copy per relay (3465 GB); relay overage $139
+10000,Binary + deltas AND relay tier,modelled,143,9857,2 relays; clients get binary. Serving JSON clients from relays would add relay egress
+10000,Binary orders,modelled,9994,6,"inbound transfer is $0/GB, so only NLB processing changes: 973 GB/month fewer at 1000 orders/s saves $5.84"
+30000,Today: JSON over AWS egress,baseline,30000,0,
+30000,"Binary, full snapshots",measured,6045,23955,bytes x0.147 (regimes 0.147-0.148)
+30000,Binary + deltas (exact),measured,3028,26972,"bytes x0.070 (regimes 0.062-0.087); one-instrument subscribers, wire model: x0.225"
+30000,+ skip unchanged books,measured,1740,28260,bytes x0.040 (regimes 0.028-0.064)
+30000,+ conflate books to 1 s (opt-in),measured,1348,28652,bytes x0.030 (regimes 0.026-0.035)
+30000,JSON + permessage-deflate,measured,9515,20485,"bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~25 ms CPU per connection-second (~6.7 cores at this scale) and ~376 KiB per connection"
+30000,JSON + zstd dictionary,measured,10627,19373,"bytes x0.277 (regimes 0.262-0.279); not a WebSocket standard, so every client needs a custom decoder"
+30000,Direct Connect to the CDN,modelled,13776,16224,"$0.02/GB + 1x10G port + NLB; PLUS UNKNOWN Cloudflare interconnect (Enterprise-only, no public price) and colocation fees"
+30000,CloudFront instead of current CDN,modelled,25601,4399,AWS to CloudFront is $0/GB; CloudFront US list tiers; replaces the CDN's WAF/DDoS role; flat-rate plans cap at 50 TB unless re-priced (UNKNOWN)
+30000,Relay tier outside AWS (JSON),modelled,1640,28360,5 relays on Hetzner at list price; AWS sends one feed copy per relay (8663 GB); relay overage $540
+30000,Binary + deltas AND relay tier,modelled,171,29829,2 relays; clients get binary. Serving JSON clients from relays would add relay egress
+30000,Binary orders,modelled,29994,6,"inbound transfer is $0/GB, so only NLB processing changes: 973 GB/month fewer at 1000 orders/s saves $5.84"
