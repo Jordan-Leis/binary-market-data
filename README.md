@@ -8,10 +8,11 @@ What actually lowers the bill for streaming exchange market data over WebSockets
 
 **What the chart says,** for an illustrative $10,000 a month bill (118 TB a month at AWS list prices):
 
-- **Binary with deltas cuts market data bytes by 93% on the synthetic feed** ($818 a month). Full binary snapshots alone cut 85%.
-- **Standard permessage-deflate is a strong baseline.** It cuts 75% with no new client code, but each connection gets its own compressor. On this machine that cost hundreds of times more CPU per connection than encode-once binary, plus 376 KiB of memory per connection, and it rules out encode-once fan-out.
-- **Where the fan-out happens matters as much as the encoding.** If AWS sends one copy of the feed to a few relays outside AWS, instead of one copy per subscriber, today's JSON clients cost $583 at list price. Combined with binary, that is $143.
-- **Binary orders barely move this bill.** AWS charges $0.00 per GB for inbound transfer, so orders affect only NLB processing.
+- **For a whole-feed subscriber, binary with deltas cuts market data bytes by 93% on the synthetic feed** ($818 a month). Full binary snapshots alone cut 85%. Most of that comes from dropping JSON's text overhead; deltas then halve what remains.
+- **Standard permessage-deflate is a strong baseline.** It cuts 75% with no new client code. Its cost is a compressor per connection: CPU and 376 KiB of memory each, and no encode-once fan-out (see the CPU tables).
+- **The gap shrinks for small subscriptions.** If every client followed one instrument, per-packet TCP/TLS overhead would dominate, and in the wire model binary costs $2,529 against $3,170 for permessage-deflate.
+- **Where the fan-out happens can matter as much as the encoding, in this model.** If AWS sends one copy of the feed to a few relays outside AWS instead of one per subscriber, today's JSON clients cost $561 at list price, and $141 with binary. That depends on how big the relayed feed is: at 10x the modelled feed, relaying JSON costs $3,239. The relay tier is modelled, not built.
+- **Binary order requests barely move this bill.** AWS charges $0.00 per GB for inbound transfer. Order responses and private order and fill streams are outbound and billed, and were not measured here.
 
 ## The problem as a cost model
 
@@ -26,7 +27,7 @@ Each lever attacks one term:
 - **Relay tier:** how many copies leave AWS.
 - **Direct Connect and CloudFront:** $/GB.
 
-Inbound traffic is free, so the outbound market data stream is the bill. [docs/cost-model.md](docs/cost-model.md) gives the formulas, list prices (checked 2026-11-07, as an upper bound) and assumptions.
+Inbound traffic is free, so outbound traffic is the bill. For public subscribers that is mostly market data. [docs/cost-model.md](docs/cost-model.md) gives the formulas, list prices (checked 2026-11-07, as an upper bound) and assumptions.
 
 ## What is here
 
@@ -98,7 +99,7 @@ Per-connection compressor state, live heap after traffic: 376 KiB for permessage
 
 The synthetic whole feed is 1,960 messages per second.
 
-### Decoder fuzzing
+### Decoder mutation testing
 
 2,000,000 seeded mutations (byte flips, truncation, junk insertion, random frames): 0 panics.
 
@@ -125,13 +126,22 @@ List prices checked 2026-11-07 are an upper bound. Bills are illustrative. Encod
 
 ## What the results say
 
-1. **Most of the binary saving comes from not repeating unchanged state.** Compact decimals and integer instrument IDs take a whole-feed subscriber to 0.147 of JSON. Deltas take it to 0.070. Skipping unchanged books goes further, but only if the venue publishes unchanged books today. The docs do not say, so that bar is conditional.
-2. **The format is exact.** Each binary client rebuilds the JSON stream byte for byte. That is checked over real sockets in `crates/gateway/tests/e2e.rs`, on every synthetic message in every regime, and by property tests. Anything the codec cannot carry exactly (an unknown field, a number where a string was documented, a non-canonical decimal) is forwarded as raw JSON instead of being reshaped.
-3. **permessage-deflate is the honest competitor.** It needs no new client and gets within a factor of about 3.5 of binary with deltas. Its costs are per connection (see the CPU and memory tables), and it cannot be encoded once and shared. Turning off context takeover makes it shareable but costs most of the gain (0.642 of JSON). Binary on top of permessage-deflate reaches 0.034, so the two are not exclusive.
+1. **Most of the binary saving comes from dropping JSON's text overhead.** Keys, channel strings and decimal text go, and integer instrument IDs replace names, taking a whole-feed subscriber to 0.147 of JSON. Deltas then halve what remains, to 0.070. Skipping unchanged books goes further, but only if the venue publishes unchanged books today. The docs do not say, so that bar is conditional.
+2. **The format is exact, and the transcoder checks it.** After parsing a message, the transcoder renders it back and compares the result with the input. Anything that would not come back byte for byte goes out as raw JSON instead of being reshaped: an unknown field, a number where a string was documented, a non-canonical decimal, different whitespace or key order. Binary clients then rebuild the JSON stream exactly, which is checked over real sockets in `crates/gateway/tests/e2e.rs` and by property tests. One caveat: the synthetic generator writes the schema's key order, so 0 fallbacks here says nothing about a real feed. If a real feed used a different key order, every message would fall back, and the renderer would need that order before binary saved anything.
+3. **permessage-deflate is the honest competitor.** It needs no new client, and for a whole-feed subscriber binary with deltas is about 3.5 times smaller. Its costs are per connection, and it cannot be encoded once and shared. Turning off context takeover makes it shareable, but loses most of the gain (0.642 of JSON).
+   - The CPU figure was measured with `miniz_oxide` at level 6 with a 15-bit window. zlib-ng, a lower level or a smaller window would cost less. At the illustrative $10k bill, `results/cost_model.csv` puts it at about two cores.
+   - A whole-feed tick is bigger than deflate's 32 KB window, so deflate rarely sees the same book's previous message. Clients following fewer instruments compress better.
+   - Binary on top of permessage-deflate reaches 0.034, so the two are not exclusive.
+   - The baseline not measured here is JSON deltas, which a venue could ship without a new format.
 4. **Small subscriptions are limited by TCP/TLS overhead, not encoding.** In the wire model, a client following one instrument saves less (0.225 of JSON) than a whole-feed client, because per-packet headers dominate a delta of about 23 bytes. Batching per tick only helps when there is something to batch.
-5. **Order encoding is not a cost lever.** Orders shrink from 491 to 121 bytes, but they flow inbound, which AWS does not charge for. The reasons to do it are parsing cost and latency, not the bill.
-6. **The broker is not the bottleneck.** Redis and Dragonfly carry the binary format, including NUL bytes, CRLF and RESP lookalikes, and invalid UTF-8, through `PUBLISH` and `SET`/`GET` byte for byte. Their pipelined ceilings are hundreds of times the synthetic feed's message rate, and binary and JSON show the same loopback latency. So binary can go straight through the existing broker, and I did not build a custom pub engine. Removing the broker would also mean replacing whatever else it holds, such as rate limits and caches, for no measured gain.
-7. **Checking signatures at the edge has a price.** On this machine, recovering a secp256k1 signer in pure Rust cost about as much CPU as transcoding a hundred market data messages (see the CPU table). That is fine for rejecting garbage early. At high order rates it is a capacity decision about where verification belongs.
+5. **Encoding order requests is not a cost lever.** Requests shrink from 491 to 121 bytes, but they flow inbound, which AWS does not charge for. Order responses and private order and fill streams flow outbound and are billed. They were not measured here, and they deserve the same treatment as market data. The reasons to encode requests are parsing cost and latency, not the bill.
+6. **A Redis-compatible broker would not be the bottleneck.** If one sits between a matching engine and its gateways, binary can go straight through it.
+   - Redis and Dragonfly both carried the binary format byte for byte through `PUBLISH` and `SET`/`GET`, including NUL bytes, CRLF and RESP lookalikes, and invalid UTF-8.
+   - With one subscriber on loopback, their pipelined ceilings were hundreds of times the synthetic feed's message rate.
+   - Median publish-to-receive latency was the same for binary and JSON. The tails differ by run.
+   - So I did not build a custom pub engine. Replacing a broker that also holds rate limits or caches would mean rebuilding those too, for no measured gain.
+   - Not tested: many subscribers, or a real network.
+7. **Checking signatures at the edge has a price.** On this machine, recovering a secp256k1 signer in pure Rust cost about as much CPU as transcoding a hundred market data messages (see the CPU table). That is fine for rejecting garbage early, and the gateway caps orders per frame so a client cannot queue unbounded work. At high order rates it is a capacity decision about where verification belongs, and it should run off the async workers.
 8. **ZMQ PUB/SUB drops messages silently under load.** The e2e test saw it in a debug build. The binary stream stays correct anyway, because upstream books are full snapshots and the transcoder diffs against whatever it last received.
 
 ## How to run
@@ -152,7 +162,16 @@ Size and cost results are deterministic. Timing and broker results depend on the
 - **The bills are illustrative.** Prices are public list prices, so they are an upper bound before discounts. The model assumes the whole bill is market data egress. The CDN interconnect price, CloudFront flat-rate eligibility for WebSockets, relay operating cost and added latency are unknown or not modelled.
 - **Timing is from one machine.** It was measured under WSL2 on loopback: serialization and copy costs only, not network latency. Nothing here says how fast a production system is.
 - **The wire model is a model.** It assumes one WebSocket message per TCP segment, with no coalescing. That makes unbatched JSON look worse than it may be, which is why the encoding comparison and the chart use payload bytes.
-- **The gateway is a prototype.** There is no TLS, authentication or per-client rate limiting. The matching core is a mock that acknowledges every order. Trigger, algo and fee-extension order params stay on the JSON path.
+- **The gateway is a prototype.**
+  - There is no TLS, authentication or per-client rate limiting.
+  - Resync requests are not rate-limited and take a shared lock.
+  - Signature checks run on the async workers.
+  - Acks are dropped if a client's ack queue is full.
+  - The matching core is a mock that acknowledges every order.
+  - Trigger, algo and fee-extension order params stay on the JSON path.
+- **Order costs are only half measured.** Order requests are inbound and free. Order responses and private order and fill streams are billed outbound, and were not measured.
+- **The relay tier is modelled, not built.** Its cost depends on how much of the feed a relay must carry, and on relay capacity, which is assumed. Private channels cannot be relayed this way.
+- **The mutation testing is seeded, not coverage-guided.**
 - **JSON key order** is assumed to follow the schema. The round trip is byte-exact for that order. A different real key order changes bytes, not values.
 
 ## What I would do next
@@ -165,4 +184,4 @@ Size and cost results are deterministic. Timing and broker results depend on the
 
 ## AI use
 
-Claude Code (Anthropic) wrote most of the code and documentation and ran the experiments, working from a plan I approved. I own the design decisions: making binary exact rather than lossy, measuring against compression, relay tier and broker baselines, using synthetic data after reading the API terms, and choosing what to trust in the results. Items I still need to review by hand are tracked outside this repo, and this section will be updated when that review is done.
+Claude Code (Anthropic) wrote most of the code and documentation and ran the experiments, working from a plan I approved. A separate Claude reviewer then read the repo as a skeptical interviewer would, and its findings were fixed before release. I own the design decisions: making binary exact rather than lossy, measuring against compression, relay tier and broker baselines, falling back to synthetic data when the API terms ruled out capture, and choosing what to trust in the results. Items I still need to review by hand are tracked outside this repo, and this section will be updated when that review is done.

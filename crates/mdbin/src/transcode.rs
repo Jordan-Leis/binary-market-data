@@ -7,7 +7,7 @@
 
 use crate::dec::Dec;
 use crate::error::Error;
-use crate::json::{parse_notification, Parsed};
+use crate::json::{parse_notification, render_book, render_ticker, render_trades, Parsed};
 use crate::msg::*;
 use std::collections::HashMap;
 
@@ -202,7 +202,20 @@ impl Transcoder {
     }
 
     fn try_push(&mut self, json: &str, out: &mut Vec<u8>) -> Result<Outcome, Error> {
-        match parse_notification(json)? {
+        let parsed = parse_notification(json)?;
+        // Byte-exactness is checked, not assumed: re-render what was parsed and
+        // compare with the input. Different whitespace, key order or escaping
+        // would be reshaped by the binary path, so such input goes out raw.
+        let mut check = String::with_capacity(json.len());
+        match &parsed {
+            Parsed::Book { instrument, timestamp, book } => render_book(&mut check, instrument, *timestamp, book)?,
+            Parsed::Ticker { instrument, chan, timestamp, state } => render_ticker(&mut check, instrument, *chan, *timestamp, state)?,
+            Parsed::Trades { instrument, trades } => render_trades(&mut check, instrument, trades),
+        }
+        if check != json {
+            return Err(Error::NotRepresentable);
+        }
+        match parsed {
             Parsed::Book { instrument, timestamp, book } => {
                 let id = self.intern(instrument, out)?;
                 self.push_book(id, timestamp, book, out)

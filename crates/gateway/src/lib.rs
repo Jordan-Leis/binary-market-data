@@ -41,6 +41,10 @@ pub const SUBPROTOCOL: &str = "mdbin.v1";
 pub const MAX_CLIENT_MESSAGE: usize = 64 * 1024;
 const BROADCAST_CAPACITY: usize = 1 << 16;
 const BATCH_FLUSH_BYTES: usize = 64 * 1024;
+/// Each order costs a signature recovery, so a frame may carry only a few.
+pub const MAX_ORDERS_PER_FRAME: usize = 16;
+/// The public docs cap a connection at 10,000 channels.
+pub const MAX_CHANNELS: usize = 10_000;
 
 #[derive(Default)]
 pub struct Stats {
@@ -371,8 +375,11 @@ async fn client_task(
                 }
                 Some(Ok(WsMessage::Binary(b))) => {
                     match handle_binary(&b, conn, &hub, &bus, &*registry) {
-                        Ok(Some(frame)) => sink.send(WsMessage::Binary(frame.into())).await?,
-                        Ok(None) => {}
+                        Ok(frames) => {
+                            for frame in frames {
+                                sink.send(WsMessage::Binary(frame.into())).await?;
+                            }
+                        }
                         Err(_) => {
                             hub.stats.rejected_frames.fetch_add(1, Relaxed);
                             break close(&mut sink).await;
@@ -458,6 +465,9 @@ fn handle_text(
                 return TextAction::Reject;
             };
             let mut status = serde_json::Map::new();
+            if channels.len() + list.len() > MAX_CHANNELS {
+                return TextAction::Reject;
+            }
             for c in list.iter().filter_map(|c| c.as_str()) {
                 channels.insert(Arc::from(c));
                 status.insert(c.to_owned(), "ok".into());
@@ -503,9 +513,12 @@ fn handle_binary(
     hub: &Hub,
     bus: &OrderBus,
     registry: &dyn Registry,
-) -> Result<Option<Vec<u8>>, mdbin::Error> {
+) -> Result<Vec<Vec<u8>>, mdbin::Error> {
     let msgs = decode_frame(frame)?;
-    let mut reply = None;
+    if msgs.iter().filter(|m| matches!(m.body, Body::NewOrder(_))).count() > MAX_ORDERS_PER_FRAME {
+        return Err(mdbin::Error::CountTooLarge);
+    }
+    let mut replies = Vec::new();
     for m in msgs {
         match m.body {
             Body::NewOrder(order) => {
@@ -514,17 +527,17 @@ fn handle_binary(
                 if forward_order(conn, m.header.instrument, &name, *order, hub, bus, registry).is_err() {
                     let ack = OrderAck { rpc_id, accepted: false, order_id: [0; 16], reason: 1 };
                     let h = Header { ty: TYPE_ORDER_ACK, ..Default::default() };
-                    reply = Some(encode_frame(&h, &Body::OrderAck(ack))?);
+                    replies.push(encode_frame(&h, &Body::OrderAck(ack))?);
                 }
             }
             Body::ResyncRequest { family, chan } => {
                 hub.stats.resync_snapshots.fetch_add(1, Relaxed);
-                reply = hub.resync_frame(m.header.instrument, family, chan);
+                replies.extend(hub.resync_frame(m.header.instrument, family, chan));
             }
             _ => return Err(mdbin::Error::BadEnum),
         }
     }
-    Ok(reply)
+    Ok(replies)
 }
 
 /// Checks the signature at the edge, then hands one internal format to the

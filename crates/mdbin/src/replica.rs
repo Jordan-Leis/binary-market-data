@@ -189,10 +189,23 @@ impl Replica {
                     self.gaps += 1;
                     return Ok(Applied::Gap { stream, expected: s.seq + 1, got: h.seq });
                 }
-                s.ts = s.ts.checked_add(h.ts).ok_or(Error::DecimalOverflow)?;
-                let ts = s.ts;
-                apply_ticker(&mut s.state, t, ts)?;
-                s.seq = h.seq;
+                // Apply to a copy so an error leaves the stream stale, not half-updated.
+                let res = s.ts.checked_add(h.ts).ok_or(Error::DecimalOverflow).and_then(|ts| {
+                    let mut state = s.state.clone();
+                    apply_ticker(&mut state, t, ts)?;
+                    Ok((ts, state))
+                });
+                match res {
+                    Ok((ts, state)) => {
+                        s.ts = ts;
+                        s.state = state;
+                        s.seq = h.seq;
+                    }
+                    Err(e) => {
+                        s.stale = true;
+                        return Err(e);
+                    }
+                }
                 self.render_ticker(key, render)
             }
             Body::Trades { trades, .. } => {

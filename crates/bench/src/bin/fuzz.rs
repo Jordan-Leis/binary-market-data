@@ -1,6 +1,8 @@
-//! Deterministic mutation fuzzing of the decoder and client state machine.
-//! Complements the proptest suites in crates/mdbin/tests/hostile.rs with many
-//! more iterations. Any panic is caught, counted and reported.
+//! Seeded mutation testing of the decoder and client state machine. This is
+//! not coverage-guided fuzzing: it mutates valid frames at random. Each mutated
+//! frame is applied to a client that already holds state from a valid
+//! snapshot frame, so deltas meet established books. Any panic is caught,
+//! counted and reported.
 
 use mdbin::msg::{decode_frame, MAGIC_VERSION};
 use mdbin::replica::Replica;
@@ -51,6 +53,9 @@ fn main() {
         }
         let r = panic::catch_unwind(|| {
             let mut rep = Replica::new();
+            for m in decode_frame(&corpus[0]).unwrap_or_default() {
+                let _ = rep.apply(&m, false);
+            }
             match decode_frame(&f) {
                 Ok(msgs) => {
                     for m in &msgs {
@@ -69,7 +74,7 @@ fn main() {
     }
     let doc = serde_json::json!({
         "iterations": iters, "panics": panics, "frames_accepted": accepted, "frames_rejected": rejected,
-        "mutations": "byte flips, truncation, junk insertion, random frames; seeded",
+        "method": "seeded mutation testing (not coverage-guided): byte flips, truncation, junk insertion, random frames, applied after a valid snapshot frame",
     });
     std::fs::create_dir_all(&out_dir).unwrap();
     std::fs::write(format!("{out_dir}/fuzz.json"), serde_json::to_string_pretty(&doc).unwrap() + "\n").unwrap();

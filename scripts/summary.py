@@ -60,7 +60,7 @@ def main():
     w(f"- Joining the whole binary feed costs {reg['base']['join_bytes_whole_feed_binary']/1000:.1f} KB once per connection (directory and snapshots).")
     w(f"- Raw-JSON fallbacks across all runs: {sum(reg[x]['raw_fallbacks'] for x in reg)}. Every synthetic message round-tripped exactly.")
     o = s["orders"]
-    w(f"- Signed orders: {o['mean_json_bytes']:.0f} bytes as JSON, {o['mean_binary_bytes']:.0f} as binary; the signature goes from {o['signature_json_chars']} characters of hex to 65 bytes.\n")
+    w(f"- Signed order requests: {o['mean_json_bytes']:.0f} bytes as JSON, {o['mean_binary_bytes']:.0f} as binary; the signature goes from {o['signature_json_chars']} characters of hex to 65 bytes. Requests are inbound, which AWS does not charge for; responses were not measured.\n")
 
     w("### CPU and memory (MEASURED on one machine, SYNTHETIC inputs)\n")
     m = t["machine"]
@@ -90,7 +90,7 @@ def main():
     w(f"\nPer-connection compressor state, live heap after traffic: {t['per_connection_state_bytes']['pmd_context_takeover_live_heap']/1024:.0f} KiB for permessage-deflate with context. Binary encode-once keeps no per-connection codec state.\n")
 
     w("### Redis and Dragonfly pub/sub (MEASURED on loopback)\n")
-    w("| Server | Byte-exact (7 hostile payloads, PUBLISH and SET/GET) | p50 / p99 publish-to-receive, 2000 msg/s | Pipelined ceiling, binary msgs/s |")
+    w("| Server | Byte-exact (7 hostile payloads, PUBLISH and SET/GET) | p50 / p99 publish-to-receive, 2000 msg/s, one subscriber | Pipelined ceiling, binary msgs/s, one subscriber |")
     w("|---|---|---|---:|")
     for name, r in b["servers"].items():
         if not r.get("tested"):
@@ -104,7 +104,7 @@ def main():
         label = f"Dragonfly {ver[1].split('-')[0]}" if name == "dragonfly" else f"Redis {ver[2].removeprefix('v=')}"
         w(f"| {label} | {'yes, all' if ok else 'NO'} | {lat['p50_us']:.0f} / {lat['p99_us']:.0f} us | {cap:,.0f} |")
     w(f"\nThe synthetic whole feed is {b['synthetic_feed_messages_per_s']:,} messages per second.\n")
-    w(f"### Decoder fuzzing\n\n{fz['iterations']:,} seeded mutations (byte flips, truncation, junk insertion, random frames): {fz['panics']} panics.\n")
+    w(f"### Decoder mutation testing\n\n{fz['iterations']:,} seeded mutations (byte flips, truncation, junk insertion, random frames), each applied after a valid snapshot frame; not coverage-guided: {fz['panics']} panics.\n")
 
     w("### Monthly cost by lever (MODEL)\n")
     w("List prices checked 2026-11-07 are an upper bound. Bills are illustrative. Encoding ratios are from the SYNTHETIC base regime.\n")

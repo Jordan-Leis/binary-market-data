@@ -26,14 +26,17 @@ RESULTS = ROOT / "results"
 SCENARIOS = [1_000, 10_000, 30_000]
 CHART_SCENARIO = 10_000
 SECONDS_PER_MONTH = 730 * 3600
+# AWS publishes tiers in multiples of 1024 GB, so GB here means 2^30 bytes.
+BYTES_PER_GB = 2**30
 
 # ---- Assumptions (not measurements). Each is printed into the results.
 ASSUMPTIONS = {
-    "all_of_the_bill_is_market_data_egress_via_one_nlb": True,
+    "illustrative_bill_is_entirely_public_market_data_egress_behind_one_load_balancer": True,
     "relay_monthly_capacity_tb": 100.0,  # ~30% of a 1 Gbit/s port, per relay
     "relay_included_tb": 1.0,  # low end of Hetzner's published US cloud range
     "direct_connect_port_max_utilisation": 0.5,
     "orders_per_second_for_order_lever": 1000,
+    "relay_feed_size_sensitivity_multiplier": 10,  # a real relay carries every channel variant, not one per instrument
 }
 
 
@@ -70,7 +73,7 @@ class Prices:
 
     def direct_connect(self, gb: float) -> tuple[float, str]:
         d = self.p["aws_direct_connect"]
-        gbps = gb * 8 / SECONDS_PER_MONTH / ASSUMPTIONS["direct_connect_port_max_utilisation"]
+        gbps = gb * BYTES_PER_GB * 8 / 1e9 / SECONDS_PER_MONTH / ASSUMPTIONS["direct_connect_port_max_utilisation"]
         if gbps <= 1:
             port, name = d["port_1g_usd_per_hour"], "1G"
         else:
@@ -120,7 +123,7 @@ def main() -> None:
     base = ratios["base"]
 
     feed_bps = sizes["regimes"]["base"]["whole_feed_subscriber"]["json"]["payload_bytes_per_s"]
-    feed_gb_month = feed_bps * SECONDS_PER_MONTH / 1e9
+    feed_gb_month = feed_bps * SECONDS_PER_MONTH / BYTES_PER_GB
     bin_feed_gb_month = feed_gb_month * base["binary_deltas"]
     pmd_cpu_s_per_conn_s = (
         timing["fan_out_one_second_of_feed"]["results"]["json_pmd_context_takeover_per_connection"][
@@ -153,10 +156,15 @@ def main() -> None:
                 note += f"; one-instrument subscribers, wire model: x{base['_one_instrument_wire'][key]:.3f}"
             if key == "json_pmd_context_takeover":
                 cores = subs * pmd_cpu_s_per_conn_s
-                note += f"; costs ~{pmd_cpu_s_per_conn_s*1000:.0f} ms CPU per connection-second (~{cores:.1f} cores at this scale) and ~{pmd_heap/1024:.0f} KiB per connection"
+                note += f"; costs ~{pmd_cpu_s_per_conn_s*1000:.0f} ms CPU per connection-second (~{cores:.1f} cores at this scale) and ~{pmd_heap/1024:.0f} KiB per connection, measured with miniz_oxide at level 6 and a 15-bit window (zlib-ng, a lower level or a smaller window would cost less)"
             if key == "json_zstd_dictionary":
                 note += "; not a WebSocket standard, so every client needs a custom decoder"
             rows.append({"lever": label, "kind": kind, "ratio": base[key], "monthly_usd": prices.aws_bill(gb * base[key]), "note": note})
+        for key, label in [("binary_deltas", "Binary + deltas, one-instrument subscribers (wire model)"),
+                           ("json_pmd_context_takeover", "JSON + permessage-deflate, one-instrument subscribers (wire model)")]:
+            r1 = base["_one_instrument_wire"][key]
+            rows.append({"lever": label, "kind": "modelled", "ratio": r1, "monthly_usd": prices.aws_bill(gb * r1),
+                         "note": f"wire bytes x{r1:.3f}: if every subscriber followed one instrument, TCP/TLS overhead per small frame dominates"})
         dx, port = prices.direct_connect(gb)
         rows.append({"lever": "Direct Connect to the CDN", "kind": "modelled", "monthly_usd": dx,
                      "note": f"$0.02/GB + {port} port + NLB; PLUS UNKNOWN CDN interconnect cost (for example, Cloudflare Network Interconnect is Enterprise-only with no public price) and colocation fees", "unknown_extra": True})
@@ -168,11 +176,18 @@ def main() -> None:
         relay_b, det_b = prices.relay_tier(gb * base["binary_deltas"], bin_feed_gb_month)
         rows.append({"lever": "Binary + deltas AND relay tier", "kind": "modelled", "monthly_usd": relay_b,
                      "note": f"{det_b['relays']} relays; clients get binary. Serving JSON clients from relays would add relay egress", "detail": det_b})
+        k = ASSUMPTIONS["relay_feed_size_sensitivity_multiplier"]
+        big, det_big = prices.relay_tier(gb, feed_gb_month * k)
+        rows.append({"lever": f"Relay tier (JSON), feed {k}x larger", "kind": "modelled", "monthly_usd": big,
+                     "note": f"each relay receives {k}x the modelled feed, e.g. every group/depth/interval variant; {det_big['relays']} relays", "detail": det_big})
+        big_b, det_big_b = prices.relay_tier(gb * base["binary_deltas"], bin_feed_gb_month * k)
+        rows.append({"lever": f"Binary + deltas AND relay tier, feed {k}x larger", "kind": "modelled", "monthly_usd": big_b,
+                     "note": f"{det_big_b['relays']} relays", "detail": det_big_b})
         order_gb = ASSUMPTIONS["orders_per_second_for_order_lever"] * (
-            sizes["orders"]["mean_json_bytes"] - sizes["orders"]["mean_binary_bytes"]) * SECONDS_PER_MONTH / 1e9
+            sizes["orders"]["mean_json_bytes"] - sizes["orders"]["mean_binary_bytes"]) * SECONDS_PER_MONTH / BYTES_PER_GB
         rows.append({"lever": "Binary orders", "kind": "modelled",
                      "monthly_usd": prices.aws_bill(gb) - order_gb * prices.p["aws_nlb"]["usd_per_nlcu_hour"],
-                     "note": f"inbound transfer is $0/GB, so only NLB processing changes: {order_gb:.0f} GB/month fewer at {ASSUMPTIONS['orders_per_second_for_order_lever']} orders/s saves ${order_gb*0.006:.2f}"})
+                     "note": f"order REQUESTS are inbound ($0/GB), so only load balancer processing changes: {order_gb:.0f} GB/month fewer at {ASSUMPTIONS['orders_per_second_for_order_lever']} orders/s saves ${order_gb*0.006:.2f}. Order RESPONSES and private order/fill streams are billed egress and were NOT measured"})
         for r in rows:
             r["saving_vs_today_usd"] = rows[0]["monthly_usd"] - r["monthly_usd"]
         scenarios.append({"illustrative_bill_usd": bill, "implied_gb_per_month": gb,
@@ -186,7 +201,7 @@ def main() -> None:
             "digitalocean_over_pool": prices.p["digitalocean"]["usd_per_gib_over_pool"] * 1024,
             "gcp_premium_na_10tib_plus": prices.p["gcp"]["usd_per_gib"][2] * 1024,
         },
-        "note": "Per-TB list prices for the host of a relay tier. Matching is assumed to stay in AWS; only the public fan-out moves.",
+        "note": "Per-TB list prices for the host of a relay tier. Matching is assumed to stay in AWS; only public market data fan-out moves. Private channels cannot be relayed this way.",
     }
     doc = {
         "label": "MODEL. Byte ratios measured on SYNTHETIC data; prices are public list prices checked "
@@ -222,14 +237,16 @@ def chart(s: dict, checked: str) -> None:
         "JSON + permessage-deflate",
         "Binary, full snapshots",
         "Binary + deltas (exact)",
+        "Binary + deltas, one-instrument subscribers (wire model)",
         "+ skip unchanged books (if sent today)",
         "CloudFront instead of current CDN",
         "Direct Connect to the CDN",
         "Relay tier outside AWS (JSON)",
+        "Relay tier (JSON), feed 10x larger",
         "Binary + deltas AND relay tier",
     ]
     rows = [r for k in keep for r in s["rows"] if r["lever"] == k]
-    fig, ax = plt.subplots(figsize=(9, 5.2), dpi=150)
+    fig, ax = plt.subplots(figsize=(9.6, 6.2), dpi=150)
     fig.patch.set_facecolor(surface)
     ax.set_facecolor(surface)
     y = list(range(len(rows)))[::-1]
@@ -240,7 +257,9 @@ def chart(s: dict, checked: str) -> None:
             label += " + unknown interconnect"
         ax.text(r["monthly_usd"] + s["rows"][0]["monthly_usd"] * 0.012, yi, label, va="center", ha="left", color=ink, fontsize=9)
     ax.set_yticks(y)
-    ax.set_yticklabels([r["lever"] for r in rows], color=ink, fontsize=9.5)
+    short = {"Binary + deltas, one-instrument subscribers (wire model)": "Binary + deltas, if every client\nfollows one instrument (wire model)",
+             "Relay tier (JSON), feed 10x larger": "Relay tier (JSON), if the relayed\nfeed is 10x larger"}
+    ax.set_yticklabels([short.get(r["lever"], r["lever"]) for r in rows], color=ink, fontsize=9.2)
     ax.set_xlim(0, s["rows"][0]["monthly_usd"] * 1.32)
     ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f"${v:,.0f}"))
     ax.tick_params(axis="x", colors=ink2, labelsize=8.5)
@@ -262,7 +281,7 @@ def chart(s: dict, checked: str) -> None:
         Patch(color=color["modelled"], label="Modelled from public list prices"),
     ]
     ax.legend(handles=legend, loc="lower right", frameon=False, fontsize=8.5, labelcolor=ink2)
-    fig.text(0.01, 0.01, "Encoding bars: payload bytes, whole-feed subscriber, base regime. See results/cost_model.csv for every lever, range and caveat.",
+    fig.text(0.01, 0.01, "Encoding bars: payload bytes, whole-feed subscriber, base regime, unless marked. Relay tier: modelled, not built. Every lever, range and caveat: results/cost_model.csv",
              color=ink2, fontsize=7.5)
     fig.tight_layout(rect=(0, 0.03, 1, 1))
     fig.savefig(RESULTS / "monthly_cost_by_lever.png", facecolor=surface, metadata={"Software": None})

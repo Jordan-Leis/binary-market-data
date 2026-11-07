@@ -157,6 +157,11 @@ fn anything_unrepresentable_is_forwarded_unchanged() {
         r#"{"method":"subscription","params":{"channel":"orderbook.ETH-PERP.1.20","data":{"asks":[],"bids":[],"instrument_name":"BTC-PERP","publish_id":1,"timestamp":1}}}"#,
         // Not JSON at all.
         "ping",
+        // Valid and parseable, but with whitespace the renderer would not
+        // reproduce: byte-exactness is checked, so this goes out raw.
+        r#"{"method":"subscription", "params":{"channel":"orderbook.ETH-PERP.1.20","data":{"asks":[],"bids":[],"instrument_name":"ETH-PERP","publish_id":1,"timestamp":1}}}"#,
+        // Same values, different key order.
+        r#"{"method":"subscription","params":{"channel":"orderbook.ETH-PERP.1.20","data":{"bids":[],"asks":[],"instrument_name":"ETH-PERP","publish_id":1,"timestamp":1}}}"#,
     ];
     for json in cases {
         let mut t = Transcoder::new(Config { deltas: true, suppress_unchanged: false });
