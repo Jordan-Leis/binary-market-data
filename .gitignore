@@ -1,0 +1,10 @@
+.claude/
+.env
+.env.*
+*.pdf
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+target/
+node_modules/
