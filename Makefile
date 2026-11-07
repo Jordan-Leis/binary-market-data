@@ -5,9 +5,9 @@ export PATH := $(HOME)/.cargo/bin:$(HOME)/.local/bin:$(PATH)
 CARGO ?= cargo
 REL := target/release
 
-.PHONY: reproduce test build sizes timing broker fuzz sample analyze cost bench-criterion demo check-numbers clean-results
+.PHONY: readme reproduce test build sizes timing broker fuzz sample analyze cost bench-criterion demo check-numbers clean-results
 
-reproduce: test sizes sample analyze fuzz broker timing cost check-numbers
+reproduce: test sizes sample analyze fuzz broker timing cost readme check-numbers
 	@echo "reproduce: done. Size and cost results are deterministic; timing and broker results depend on this machine."
 
 build:
@@ -39,6 +39,9 @@ timing: build
 
 cost: sizes timing
 	cd costmodel && uv run --frozen python cost_model.py
+
+readme:
+	python3 scripts/summary.py --update-readme
 
 check-numbers:
 	python3 scripts/check_numbers.py

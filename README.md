@@ -9,7 +9,7 @@ What actually lowers the bill for streaming exchange market data over WebSockets
 **What the chart says,** for an illustrative $10,000 a month bill (118 TB a month at AWS list prices):
 
 - **Binary with deltas cuts market data bytes by 93% on the synthetic feed** ($818 a month). Full binary snapshots alone cut 85%.
-- **Standard permessage-deflate is a strong baseline.** It cuts 75% with no new client code, but each connection gets its own compressor. That costs roughly 25 ms of CPU per connection per second of feed (24,816 microseconds) and 376 KiB of memory per connection, and it breaks encode-once fan-out.
+- **Standard permessage-deflate is a strong baseline.** It cuts 75% with no new client code, but each connection gets its own compressor. On this machine that cost hundreds of times more CPU per connection than encode-once binary, plus 376 KiB of memory per connection, and it rules out encode-once fan-out.
 - **Where the fan-out happens matters as much as the encoding.** If AWS sends one copy of the feed to a few relays outside AWS, instead of one copy per subscriber, today's JSON clients cost $583 at list price. Combined with binary, that is $143.
 - **Binary orders barely move this bill.** AWS charges $0.00 per GB for inbound transfer, so orders affect only NLB processing.
 
@@ -128,10 +128,10 @@ List prices checked 2026-11-07 are an upper bound. Bills are illustrative. Encod
 1. **Most of the binary saving comes from not repeating unchanged state.** Compact decimals and integer instrument IDs take a whole-feed subscriber to 0.147 of JSON. Deltas take it to 0.070. Skipping unchanged books goes further, but only if the venue publishes unchanged books today. The docs do not say, so that bar is conditional.
 2. **The format is exact.** Each binary client rebuilds the JSON stream byte for byte. That is checked over real sockets in `crates/gateway/tests/e2e.rs`, on every synthetic message in every regime, and by property tests. Anything the codec cannot carry exactly (an unknown field, a number where a string was documented, a non-canonical decimal) is forwarded as raw JSON instead of being reshaped.
 3. **permessage-deflate is the honest competitor.** It needs no new client and gets within a factor of about 3.5 of binary with deltas. Its costs are per connection (see the CPU and memory tables), and it cannot be encoded once and shared. Turning off context takeover makes it shareable but costs most of the gain (0.642 of JSON). Binary on top of permessage-deflate reaches 0.034, so the two are not exclusive.
-4. **Small subscriptions are limited by TCP/TLS overhead, not encoding.** In the wire model, a client following one instrument saves less (0.225 of JSON) than a whole-feed client, because per-packet headers dominate a 20-byte delta. Batching per tick only helps when there is something to batch.
+4. **Small subscriptions are limited by TCP/TLS overhead, not encoding.** In the wire model, a client following one instrument saves less (0.225 of JSON) than a whole-feed client, because per-packet headers dominate a delta of about 23 bytes. Batching per tick only helps when there is something to batch.
 5. **Order encoding is not a cost lever.** Orders shrink from 491 to 121 bytes, but they flow inbound, which AWS does not charge for. The reasons to do it are parsing cost and latency, not the bill.
 6. **The broker is not the bottleneck.** Redis and Dragonfly carry the binary format, including NUL bytes, CRLF and RESP lookalikes, and invalid UTF-8, through `PUBLISH` and `SET`/`GET` byte for byte. Their pipelined ceilings are hundreds of times the synthetic feed's message rate, and binary and JSON show the same loopback latency. So binary can go straight through the existing broker, and I did not build a custom pub engine. Removing the broker would also mean replacing whatever else it holds, such as rate limits and caches, for no measured gain.
-7. **Checking signatures at the edge has a price.** Recovering a secp256k1 signer costs 165,273 ns per order in pure Rust on this machine. That is fine for rejecting garbage early. At high order rates it is a capacity decision about where verification belongs.
+7. **Checking signatures at the edge has a price.** On this machine, recovering a secp256k1 signer in pure Rust cost about as much CPU as transcoding a hundred market data messages (see the CPU table). That is fine for rejecting garbage early. At high order rates it is a capacity decision about where verification belongs.
 8. **ZMQ PUB/SUB drops messages silently under load.** The e2e test saw it in a debug build. The binary stream stays correct anyway, because upstream books are full snapshots and the transcoder diffs against whatever it last received.
 
 ## How to run
@@ -144,7 +144,7 @@ make demo          # mock core + gateway + a JSON client and a binary client, si
 make bench-criterion
 ```
 
-Size and cost results are deterministic. Timing and broker results depend on the machine, so run them on a quiet one.
+Size and cost results are deterministic. Timing and broker results depend on the machine, so run them on a quiet one. `make reproduce` rewrites the Results block of this README from `results/`, then checks that every number quoted outside the block appears in the results.
 
 ## Limitations
 

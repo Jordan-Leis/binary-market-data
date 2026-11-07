@@ -5,6 +5,7 @@ scripts/check_numbers.py fails if the two drift apart.
 """
 
 import json
+import sys
 from pathlib import Path
 
 R = Path(__file__).resolve().parent.parent / "results"
@@ -121,7 +122,14 @@ def main():
                 cell += " + unknown"
             cells.append(cell)
         w(f"| {lv} | " + " | ".join(cells) + " |")
-    (R / "summary.md").write_text("\n".join(out) + "\n")
+    text = "\n".join(out) + "\n"
+    (R / "summary.md").write_text(text)
+    if "--update-readme" in sys.argv:
+        readme = R.parent / "README.md"
+        doc = readme.read_text()
+        a, b = "<!-- summary:start -->\n", "<!-- summary:end -->"
+        head, rest = doc.split(a, 1)
+        readme.write_text(head + a + text + b + rest.split(b, 1)[1])
 
 
 if __name__ == "__main__":
