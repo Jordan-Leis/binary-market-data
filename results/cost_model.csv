@@ -20,7 +20,7 @@ illustrative_bill_usd,lever,kind,monthly_usd,saving_vs_today_usd,note
 10000,Binary + deltas (exact),measured,818,9182,"bytes x0.070 (regimes 0.062-0.087); one-instrument subscribers, wire model: x0.225"
 10000,+ skip unchanged books (if sent today),measured,467,9533,bytes x0.040 (regimes 0.028-0.064)
 10000,+ conflate books to 1 s (opt-in),measured,359,9641,bytes x0.030 (regimes 0.026-0.035)
-10000,JSON + permessage-deflate,measured,2752,7248,"bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~26 ms CPU per connection-second (~2.0 cores at this scale) and ~376 KiB per connection, measured with miniz_oxide at level 6 and a 15-bit window (zlib-ng, a lower level or a smaller window would cost less)"
+10000,JSON + permessage-deflate,measured,2752,7248,"bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~26 ms CPU per connection-second (~1.9 cores at this scale) and ~376 KiB per connection, measured with miniz_oxide at level 6 and a 15-bit window (zlib-ng, a lower level or a smaller window would cost less)"
 10000,JSON + zstd dictionary,measured,3097,6903,"bytes x0.277 (regimes 0.262-0.279); not a WebSocket standard, so every client needs a custom decoder"
 10000,"Binary + deltas, one-instrument subscribers (wire model)",modelled,2529,7471,"wire bytes x0.225: if every subscriber followed one instrument, TCP/TLS overhead per small frame dominates"
 10000,"JSON + permessage-deflate, one-instrument subscribers (wire model)",modelled,3170,6830,"wire bytes x0.283: if every subscriber followed one instrument, TCP/TLS overhead per small frame dominates"
@@ -36,7 +36,7 @@ illustrative_bill_usd,lever,kind,monthly_usd,saving_vs_today_usd,note
 30000,Binary + deltas (exact),measured,3028,26972,"bytes x0.070 (regimes 0.062-0.087); one-instrument subscribers, wire model: x0.225"
 30000,+ skip unchanged books (if sent today),measured,1740,28260,bytes x0.040 (regimes 0.028-0.064)
 30000,+ conflate books to 1 s (opt-in),measured,1348,28652,bytes x0.030 (regimes 0.026-0.035)
-30000,JSON + permessage-deflate,measured,9515,20485,"bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~26 ms CPU per connection-second (~7.5 cores at this scale) and ~376 KiB per connection, measured with miniz_oxide at level 6 and a 15-bit window (zlib-ng, a lower level or a smaller window would cost less)"
+30000,JSON + permessage-deflate,measured,9515,20485,"bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~26 ms CPU per connection-second (~7.4 cores at this scale) and ~376 KiB per connection, measured with miniz_oxide at level 6 and a 15-bit window (zlib-ng, a lower level or a smaller window would cost less)"
 30000,JSON + zstd dictionary,measured,10627,19373,"bytes x0.277 (regimes 0.262-0.279); not a WebSocket standard, so every client needs a custom decoder"
 30000,"Binary + deltas, one-instrument subscribers (wire model)",modelled,8795,21205,"wire bytes x0.225: if every subscriber followed one instrument, TCP/TLS overhead per small frame dominates"
 30000,"JSON + permessage-deflate, one-instrument subscribers (wire model)",modelled,10860,19140,"wire bytes x0.283: if every subscriber followed one instrument, TCP/TLS overhead per small frame dominates"

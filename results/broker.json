@@ -46,43 +46,43 @@
         "binary_messages": {
           "published": 200000,
           "received": 200000,
-          "received_msgs_per_s": 489360.0,
-          "seconds": 0.408697092
+          "received_msgs_per_s": 214377.0,
+          "seconds": 0.932935951
         },
         "json_messages": {
           "published": 200000,
           "received": 200000,
-          "received_msgs_per_s": 414079.0,
-          "seconds": 0.482999626
+          "received_msgs_per_s": 234431.0,
+          "seconds": 0.853127987
         }
       },
       "publish_to_receive_loopback": {
         "binary_messages_2000_per_s": {
-          "max_us": 5195.217,
+          "max_us": 13824.553,
           "mean_payload_bytes": 31.2327,
-          "p50_us": 197.6,
-          "p999_us": 3709.712,
-          "p99_us": 896.303,
+          "p50_us": 170.7,
+          "p999_us": 7688.13,
+          "p99_us": 860.404,
           "rate_msgs_per_s": 2000,
           "received": 10000,
           "sent": 10000
         },
         "binary_tick_frames_10_per_s": {
-          "max_us": 1999.906,
+          "max_us": 3436.913,
           "mean_payload_bytes": 17063.0,
-          "p50_us": 370.801,
-          "p999_us": 1999.906,
-          "p99_us": 1486.505,
+          "p50_us": 343.196,
+          "p999_us": 3436.913,
+          "p99_us": 3186.657,
           "rate_msgs_per_s": 10,
           "received": 100,
           "sent": 100
         },
         "json_messages_2000_per_s": {
-          "max_us": 4112.613,
+          "max_us": 15533.875,
           "mean_payload_bytes": 340.8164,
-          "p50_us": 193.7,
-          "p999_us": 2567.909,
-          "p99_us": 704.003,
+          "p50_us": 200.101,
+          "p999_us": 6067.73,
+          "p99_us": 600.803,
           "rate_msgs_per_s": 2000,
           "received": 10000,
           "sent": 10000
@@ -133,43 +133,43 @@
         "binary_messages": {
           "published": 200000,
           "received": 200000,
-          "received_msgs_per_s": 744323.0,
-          "seconds": 0.26870068
+          "received_msgs_per_s": 676172.0,
+          "seconds": 0.295782822
         },
         "json_messages": {
           "published": 200000,
           "received": 200000,
-          "received_msgs_per_s": 563051.0,
-          "seconds": 0.355207663
+          "received_msgs_per_s": 592465.0,
+          "seconds": 0.337572923
         }
       },
       "publish_to_receive_loopback": {
         "binary_messages_2000_per_s": {
-          "max_us": 524.302,
+          "max_us": 1967.907,
           "mean_payload_bytes": 31.2327,
-          "p50_us": 176.501,
-          "p999_us": 413.501,
-          "p99_us": 291.901,
+          "p50_us": 186.301,
+          "p999_us": 1088.403,
+          "p99_us": 926.004,
           "rate_msgs_per_s": 2000,
           "received": 10000,
           "sent": 10000
         },
         "binary_tick_frames_10_per_s": {
-          "max_us": 1288.704,
+          "max_us": 1309.207,
           "mean_payload_bytes": 17063.0,
-          "p50_us": 326.501,
-          "p999_us": 1288.704,
-          "p99_us": 1219.103,
+          "p50_us": 323.202,
+          "p999_us": 1309.207,
+          "p99_us": 1297.306,
           "rate_msgs_per_s": 10,
           "received": 100,
           "sent": 100
         },
         "json_messages_2000_per_s": {
-          "max_us": 1189.004,
+          "max_us": 3533.513,
           "mean_payload_bytes": 340.8164,
-          "p50_us": 173.9,
-          "p999_us": 998.504,
-          "p99_us": 373.102,
+          "p50_us": 193.701,
+          "p999_us": 1099.704,
+          "p99_us": 698.202,
           "rate_msgs_per_s": 2000,
           "received": 10000,
           "sent": 10000

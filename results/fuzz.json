@@ -2,6 +2,6 @@
   "frames_accepted": 145858,
   "frames_rejected": 1854142,
   "iterations": 2000000,
-  "mutations": "byte flips, truncation, junk insertion, random frames; seeded",
+  "method": "seeded mutation testing (not coverage-guided): byte flips, truncation, junk insertion, random frames, applied after a valid snapshot frame",
   "panics": 0
 }

@@ -65,43 +65,43 @@ Inbound traffic is free, so outbound traffic is the bill. For public subscribers
 - One-instrument subscribers, wire model: binary + deltas 0.225 of JSON, JSON + permessage-deflate 0.283. Small frames are dominated by TCP/TLS overhead, so the saving shrinks.
 - Joining the whole binary feed costs 34.7 KB once per connection (directory and snapshots).
 - Raw-JSON fallbacks across all runs: 0. Every synthetic message round-tripped exactly.
-- Signed orders: 491 bytes as JSON, 121 as binary; the signature goes from 134 characters of hex to 65 bytes.
+- Signed order requests: 491 bytes as JSON, 121 as binary; the signature goes from 134 characters of hex to 65 bytes. Requests are inbound, which AWS does not charge for; responses were not measured.
 
 ### CPU and memory (MEASURED on one machine, SYNTHETIC inputs)
 
-Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz, 8 cores, WSL2 kernel 6.18.54.1-microsoft-standard-WSL2, load average 1.05 2.18 1.56 at start. These are serialization and copy costs, not network latency.
+Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz, 8 cores, WSL2 kernel 6.18.54.1-microsoft-standard-WSL2, load average 1.15 2.00 2.53 at start. These are serialization and copy costs, not network latency.
 
 | Per message | CPU ns |
 |---|---:|
-| Parse JSON into a generic value (what a JSON client pays) | 1,868 |
-| Transcode JSON to binary + deltas (gateway, once per message) | 1,739 |
-| Decode binary and apply to local state (client) | 211 |
-| Decode, apply and rebuild the exact JSON text | 741 |
-| permessage-deflate, per connection | 13,466 |
-| zstd with dictionary, once per message | 1,615 |
-| Verify one order signature (secp256k1 recover, pure Rust) | 169,750 |
+| Parse JSON into a generic value (what a JSON client pays) | 2,847 |
+| Transcode JSON to binary + deltas (gateway, once per message) | 3,788 |
+| Decode binary and apply to local state (client) | 270 |
+| Decode, apply and rebuild the exact JSON text | 799 |
+| permessage-deflate, per connection | 13,398 |
+| zstd with dictionary, once per message | 1,914 |
+| Verify one order signature (secp256k1 recover, pure Rust) | 175,487 |
 
 | Fan-out, CPU per connection per second of feed | microseconds |
 |---|---:|
-| Binary: transcode once, copy shared bytes | 34.6 |
-| JSON as is: copy shared bytes | 102.2 |
-| permessage-deflate without context: compress once, copy | 366.3 |
-| permessage-deflate with context: compress per connection | 26,087.2 |
+| Binary: transcode once, copy shared bytes | 44.3 |
+| JSON as is: copy shared bytes | 116.6 |
+| permessage-deflate without context: compress once, copy | 375.6 |
+| permessage-deflate with context: compress per connection | 25,512.4 |
 
 Per-connection compressor state, live heap after traffic: 376 KiB for permessage-deflate with context. Binary encode-once keeps no per-connection codec state.
 
 ### Redis and Dragonfly pub/sub (MEASURED on loopback)
 
-| Server | Byte-exact (7 hostile payloads, PUBLISH and SET/GET) | p50 / p99 publish-to-receive, 2000 msg/s | Pipelined ceiling, binary msgs/s |
+| Server | Byte-exact (7 hostile payloads, PUBLISH and SET/GET) | p50 / p99 publish-to-receive, 2000 msg/s, one subscriber | Pipelined ceiling, binary msgs/s, one subscriber |
 |---|---|---|---:|
-| Dragonfly v2.1 | yes, all | 198 / 896 us | 489,360 |
-| Redis 7.0.15 | yes, all | 177 / 292 us | 744,323 |
+| Dragonfly v2.1 | yes, all | 171 / 860 us | 214,377 |
+| Redis 7.0.15 | yes, all | 186 / 926 us | 676,172 |
 
 The synthetic whole feed is 1,960 messages per second.
 
 ### Decoder mutation testing
 
-2,000,000 seeded mutations (byte flips, truncation, junk insertion, random frames): 0 panics.
+2,000,000 seeded mutations (byte flips, truncation, junk insertion, random frames), each applied after a valid snapshot frame; not coverage-guided: 0 panics.
 
 ### Monthly cost by lever (MODEL)
 
@@ -117,11 +117,15 @@ List prices checked 2026-11-07 are an upper bound. Bills are illustrative. Encod
 | + conflate books to 1 s (opt-in) | $38 | $359 | $1,348 |
 | JSON + permessage-deflate | $251 | $2,752 | $9,515 |
 | JSON + zstd dictionary | $282 | $3,097 | $10,627 |
+| Binary + deltas, one-instrument subscribers (wire model) | $231 | $2,529 | $8,795 |
+| JSON + permessage-deflate, one-instrument subscribers (wire model) | $289 | $3,170 | $10,860 |
 | Direct Connect to the CDN | $504 + unknown | $3,373 + unknown | $13,776 + unknown |
 | CloudFront instead of current CDN | $957 | $9,056 | $25,601 |
-| Relay tier outside AWS (JSON) | $454 | $583 | $1,640 |
-| Binary + deltas AND relay tier | $135 | $143 | $171 |
-| Binary orders | $994 | $9,994 | $29,994 |
+| Relay tier outside AWS (JSON) | $431 | $561 | $1,583 |
+| Binary + deltas AND relay tier | $133 | $141 | $169 |
+| Relay tier (JSON), feed 10x larger | $3,110 | $3,239 | $7,762 |
+| Binary + deltas AND relay tier, feed 10x larger | $329 | $336 | $365 |
+| Binary orders | $995 | $9,995 | $29,995 |
 <!-- summary:end -->
 
 ## What the results say
@@ -137,11 +141,11 @@ List prices checked 2026-11-07 are an upper bound. Bills are illustrative. Encod
 5. **Encoding order requests is not a cost lever.** Requests shrink from 491 to 121 bytes, but they flow inbound, which AWS does not charge for. Order responses and private order and fill streams flow outbound and are billed. They were not measured here, and they deserve the same treatment as market data. The reasons to encode requests are parsing cost and latency, not the bill.
 6. **A Redis-compatible broker would not be the bottleneck.** If one sits between a matching engine and its gateways, binary can go straight through it.
    - Redis and Dragonfly both carried the binary format byte for byte through `PUBLISH` and `SET`/`GET`, including NUL bytes, CRLF and RESP lookalikes, and invalid UTF-8.
-   - With one subscriber on loopback, their pipelined ceilings were hundreds of times the synthetic feed's message rate.
+   - With one subscriber on loopback, their pipelined ceilings were more than a hundred times the synthetic feed's message rate, in every run.
    - Median publish-to-receive latency was the same for binary and JSON. The tails differ by run.
    - So I did not build a custom pub engine. Replacing a broker that also holds rate limits or caches would mean rebuilding those too, for no measured gain.
    - Not tested: many subscribers, or a real network.
-7. **Checking signatures at the edge has a price.** On this machine, recovering a secp256k1 signer in pure Rust cost about as much CPU as transcoding a hundred market data messages (see the CPU table). That is fine for rejecting garbage early, and the gateway caps orders per frame so a client cannot queue unbounded work. At high order rates it is a capacity decision about where verification belongs, and it should run off the async workers.
+7. **Checking signatures at the edge has a price.** On this machine, recovering a secp256k1 signer in pure Rust cost tens of times the CPU of transcoding one market data message (see the CPU table). That is fine for rejecting garbage early, and the gateway caps orders per frame so a client cannot queue unbounded work. At high order rates it is a capacity decision about where verification belongs, and it should run off the async workers.
 8. **ZMQ PUB/SUB drops messages silently under load.** The e2e test saw it in a debug build. The binary stream stays correct anyway, because upstream books are full snapshots and the transcoder diffs against whatever it last received.
 
 ## How to run
@@ -160,7 +164,7 @@ Size and cost results are deterministic. Timing and broker results depend on the
 
 - **The data is synthetic.** The cadence, the share of unchanged books, the level counts, the number of decimal digits and the message mix are assumptions ([docs/synthetic-data.md](docs/synthetic-data.md)). The delta and skip-unchanged savings move with them, as the regime ranges show.
 - **The bills are illustrative.** Prices are public list prices, so they are an upper bound before discounts. The model assumes the whole bill is market data egress. The CDN interconnect price, CloudFront flat-rate eligibility for WebSockets, relay operating cost and added latency are unknown or not modelled.
-- **Timing is from one machine.** It was measured under WSL2 on loopback: serialization and copy costs only, not network latency. Nothing here says how fast a production system is.
+- **Timing is from one machine.** It was measured under WSL2 on loopback: serialization and copy costs only, not network latency. The machine was shared with other jobs, and the per-message figures varied noticeably between runs, so read them as orders of magnitude. Nothing here says how fast a production system is.
 - **The wire model is a model.** It assumes one WebSocket message per TCP segment, with no coalescing. That makes unbatched JSON look worse than it may be, which is why the encoding comparison and the chart use payload bytes.
 - **The gateway is a prototype.**
   - There is no TLS, authentication or per-client rate limiting.

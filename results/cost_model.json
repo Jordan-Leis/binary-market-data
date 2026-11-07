@@ -211,7 +211,7 @@
           "kind": "measured",
           "ratio": 0.24525273513439616,
           "monthly_usd": 2752.3715412642528,
-          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~26 ms CPU per connection-second (~2.0 cores at this scale) and ~376 KiB per connection, measured with miniz_oxide at level 6 and a 15-bit window (zlib-ng, a lower level or a smaller window would cost less)",
+          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~26 ms CPU per connection-second (~1.9 cores at this scale) and ~376 KiB per connection, measured with miniz_oxide at level 6 and a 15-bit window (zlib-ng, a lower level or a smaller window would cost less)",
           "saving_vs_today_usd": 7247.628458735746
         },
         {
@@ -363,7 +363,7 @@
           "kind": "measured",
           "ratio": 0.24525273513439616,
           "monthly_usd": 9514.953526641588,
-          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~26 ms CPU per connection-second (~7.5 cores at this scale) and ~376 KiB per connection, measured with miniz_oxide at level 6 and a 15-bit window (zlib-ng, a lower level or a smaller window would cost less)",
+          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~26 ms CPU per connection-second (~7.4 cores at this scale) and ~376 KiB per connection, measured with miniz_oxide at level 6 and a 15-bit window (zlib-ng, a lower level or a smaller window would cost less)",
           "saving_vs_today_usd": 20485.04647335841
         },
         {

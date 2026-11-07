@@ -19,43 +19,43 @@
 - One-instrument subscribers, wire model: binary + deltas 0.225 of JSON, JSON + permessage-deflate 0.283. Small frames are dominated by TCP/TLS overhead, so the saving shrinks.
 - Joining the whole binary feed costs 34.7 KB once per connection (directory and snapshots).
 - Raw-JSON fallbacks across all runs: 0. Every synthetic message round-tripped exactly.
-- Signed orders: 491 bytes as JSON, 121 as binary; the signature goes from 134 characters of hex to 65 bytes.
+- Signed order requests: 491 bytes as JSON, 121 as binary; the signature goes from 134 characters of hex to 65 bytes. Requests are inbound, which AWS does not charge for; responses were not measured.
 
 ### CPU and memory (MEASURED on one machine, SYNTHETIC inputs)
 
-Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz, 8 cores, WSL2 kernel 6.18.54.1-microsoft-standard-WSL2, load average 1.05 2.18 1.56 at start. These are serialization and copy costs, not network latency.
+Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz, 8 cores, WSL2 kernel 6.18.54.1-microsoft-standard-WSL2, load average 1.15 2.00 2.53 at start. These are serialization and copy costs, not network latency.
 
 | Per message | CPU ns |
 |---|---:|
-| Parse JSON into a generic value (what a JSON client pays) | 1,868 |
-| Transcode JSON to binary + deltas (gateway, once per message) | 1,739 |
-| Decode binary and apply to local state (client) | 211 |
-| Decode, apply and rebuild the exact JSON text | 741 |
-| permessage-deflate, per connection | 13,466 |
-| zstd with dictionary, once per message | 1,615 |
-| Verify one order signature (secp256k1 recover, pure Rust) | 169,750 |
+| Parse JSON into a generic value (what a JSON client pays) | 2,847 |
+| Transcode JSON to binary + deltas (gateway, once per message) | 3,788 |
+| Decode binary and apply to local state (client) | 270 |
+| Decode, apply and rebuild the exact JSON text | 799 |
+| permessage-deflate, per connection | 13,398 |
+| zstd with dictionary, once per message | 1,914 |
+| Verify one order signature (secp256k1 recover, pure Rust) | 175,487 |
 
 | Fan-out, CPU per connection per second of feed | microseconds |
 |---|---:|
-| Binary: transcode once, copy shared bytes | 34.6 |
-| JSON as is: copy shared bytes | 102.2 |
-| permessage-deflate without context: compress once, copy | 366.3 |
-| permessage-deflate with context: compress per connection | 26,087.2 |
+| Binary: transcode once, copy shared bytes | 44.3 |
+| JSON as is: copy shared bytes | 116.6 |
+| permessage-deflate without context: compress once, copy | 375.6 |
+| permessage-deflate with context: compress per connection | 25,512.4 |
 
 Per-connection compressor state, live heap after traffic: 376 KiB for permessage-deflate with context. Binary encode-once keeps no per-connection codec state.
 
 ### Redis and Dragonfly pub/sub (MEASURED on loopback)
 
-| Server | Byte-exact (7 hostile payloads, PUBLISH and SET/GET) | p50 / p99 publish-to-receive, 2000 msg/s | Pipelined ceiling, binary msgs/s |
+| Server | Byte-exact (7 hostile payloads, PUBLISH and SET/GET) | p50 / p99 publish-to-receive, 2000 msg/s, one subscriber | Pipelined ceiling, binary msgs/s, one subscriber |
 |---|---|---|---:|
-| Dragonfly v2.1 | yes, all | 198 / 896 us | 489,360 |
-| Redis 7.0.15 | yes, all | 177 / 292 us | 744,323 |
+| Dragonfly v2.1 | yes, all | 171 / 860 us | 214,377 |
+| Redis 7.0.15 | yes, all | 186 / 926 us | 676,172 |
 
 The synthetic whole feed is 1,960 messages per second.
 
-### Decoder fuzzing
+### Decoder mutation testing
 
-2,000,000 seeded mutations (byte flips, truncation, junk insertion, random frames): 0 panics.
+2,000,000 seeded mutations (byte flips, truncation, junk insertion, random frames), each applied after a valid snapshot frame; not coverage-guided: 0 panics.
 
 ### Monthly cost by lever (MODEL)
 
@@ -71,8 +71,12 @@ List prices checked 2026-11-07 are an upper bound. Bills are illustrative. Encod
 | + conflate books to 1 s (opt-in) | $38 | $359 | $1,348 |
 | JSON + permessage-deflate | $251 | $2,752 | $9,515 |
 | JSON + zstd dictionary | $282 | $3,097 | $10,627 |
+| Binary + deltas, one-instrument subscribers (wire model) | $231 | $2,529 | $8,795 |
+| JSON + permessage-deflate, one-instrument subscribers (wire model) | $289 | $3,170 | $10,860 |
 | Direct Connect to the CDN | $504 + unknown | $3,373 + unknown | $13,776 + unknown |
 | CloudFront instead of current CDN | $957 | $9,056 | $25,601 |
-| Relay tier outside AWS (JSON) | $454 | $583 | $1,640 |
-| Binary + deltas AND relay tier | $135 | $143 | $171 |
-| Binary orders | $994 | $9,994 | $29,994 |
+| Relay tier outside AWS (JSON) | $431 | $561 | $1,583 |
+| Binary + deltas AND relay tier | $133 | $141 | $169 |
+| Relay tier (JSON), feed 10x larger | $3,110 | $3,239 | $7,762 |
+| Binary + deltas AND relay tier, feed 10x larger | $329 | $336 | $365 |
+| Binary orders | $995 | $9,995 | $29,995 |
