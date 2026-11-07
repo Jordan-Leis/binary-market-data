@@ -46,50 +46,50 @@
         "binary_messages": {
           "published": 200000,
           "received": 200000,
-          "received_msgs_per_s": 549185.0,
-          "seconds": 0.364176079
+          "received_msgs_per_s": 489360.0,
+          "seconds": 0.408697092
         },
         "json_messages": {
           "published": 200000,
           "received": 200000,
-          "received_msgs_per_s": 458621.0,
-          "seconds": 0.43608973
+          "received_msgs_per_s": 414079.0,
+          "seconds": 0.482999626
         }
       },
       "publish_to_receive_loopback": {
         "binary_messages_2000_per_s": {
-          "max_us": 5890.222,
+          "max_us": 5195.217,
           "mean_payload_bytes": 31.2327,
-          "p50_us": 212.201,
-          "p999_us": 3355.513,
-          "p99_us": 1008.804,
+          "p50_us": 197.6,
+          "p999_us": 3709.712,
+          "p99_us": 896.303,
           "rate_msgs_per_s": 2000,
           "received": 10000,
           "sent": 10000
         },
         "binary_tick_frames_10_per_s": {
-          "max_us": 3451.512,
+          "max_us": 1999.906,
           "mean_payload_bytes": 17063.0,
-          "p50_us": 1058.003,
-          "p999_us": 3451.512,
-          "p99_us": 1970.207,
+          "p50_us": 370.801,
+          "p999_us": 1999.906,
+          "p99_us": 1486.505,
           "rate_msgs_per_s": 10,
           "received": 100,
           "sent": 100
         },
         "json_messages_2000_per_s": {
-          "max_us": 6478.523,
+          "max_us": 4112.613,
           "mean_payload_bytes": 340.8164,
-          "p50_us": 211.101,
-          "p999_us": 4603.916,
-          "p99_us": 1220.305,
+          "p50_us": 193.7,
+          "p999_us": 2567.909,
+          "p99_us": 704.003,
           "rate_msgs_per_s": 2000,
           "received": 10000,
           "sent": 10000
         }
       },
       "tested": true,
-      "version": "dragonfly \u001b[0;32mv2.1-1bfc6b18e0e48a9a98c730c25c6c8e788eaf2d85\u001b[m"
+      "version": "dragonfly v2.1-1bfc6b18e0e48a9a98c730c25c6c8e788eaf2d85"
     },
     "redis": {
       "byte_exactness": {
@@ -133,43 +133,43 @@
         "binary_messages": {
           "published": 200000,
           "received": 200000,
-          "received_msgs_per_s": 905477.0,
-          "seconds": 0.220878175
+          "received_msgs_per_s": 744323.0,
+          "seconds": 0.26870068
         },
         "json_messages": {
           "published": 200000,
           "received": 200000,
-          "received_msgs_per_s": 603534.0,
-          "seconds": 0.331381363
+          "received_msgs_per_s": 563051.0,
+          "seconds": 0.355207663
         }
       },
       "publish_to_receive_loopback": {
         "binary_messages_2000_per_s": {
-          "max_us": 1393.205,
+          "max_us": 524.302,
           "mean_payload_bytes": 31.2327,
-          "p50_us": 195.501,
-          "p999_us": 1079.104,
-          "p99_us": 938.703,
+          "p50_us": 176.501,
+          "p999_us": 413.501,
+          "p99_us": 291.901,
           "rate_msgs_per_s": 2000,
           "received": 10000,
           "sent": 10000
         },
         "binary_tick_frames_10_per_s": {
-          "max_us": 1298.204,
+          "max_us": 1288.704,
           "mean_payload_bytes": 17063.0,
-          "p50_us": 308.801,
-          "p999_us": 1298.204,
-          "p99_us": 1261.904,
+          "p50_us": 326.501,
+          "p999_us": 1288.704,
+          "p99_us": 1219.103,
           "rate_msgs_per_s": 10,
           "received": 100,
           "sent": 100
         },
         "json_messages_2000_per_s": {
-          "max_us": 1356.205,
+          "max_us": 1189.004,
           "mean_payload_bytes": 340.8164,
-          "p50_us": 195.701,
-          "p999_us": 1068.104,
-          "p99_us": 957.604,
+          "p50_us": 173.9,
+          "p999_us": 998.504,
+          "p99_us": 373.102,
           "rate_msgs_per_s": 2000,
           "received": 10000,
           "sent": 10000
@@ -179,5 +179,5 @@
       "version": "Redis server v=7.0.15 sha=00000000:0 malloc=jemalloc-5.3.0 bits=64 build=d064f9f48c901a92"
     }
   },
-  "synthetic_feed_messages_per_s": 1960.0
+  "synthetic_feed_messages_per_s": 1960
 }

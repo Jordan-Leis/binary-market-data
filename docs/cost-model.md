@@ -11,7 +11,7 @@ monthly bill  ~  subscribers x messages/s x bytes/message x seconds x $/GB
 - **AWS data transfer out, us-east-1:** $0.09/GB for the first 10 TB, $0.085 for the next 40 TB, $0.07 for the next 100 TB, and $0.05 after that. The first 100 GB are free.
 - **AWS data transfer in:** $0.00/GB. This is why orders, which flow inward, barely affect the transfer bill.
 - **NLB:** $0.0225 per hour, plus $0.006 per NLCU-hour. For TCP, one NLCU is 1 GB of processed bytes per hour (or 800 new connections per second, or 100,000 active connections, whichever is highest).
-- **Direct Connect:** $0.02/GB out, plus port hours ($0.30/h for 1G, $2.25/h for 10G). It also needs an interconnect with the CDN. Cloudflare's is listed as Enterprise-only, with no public price, so that cost is **unknown**.
+- **Direct Connect:** $0.02/GB out, plus port hours ($0.30/h for 1G, $2.25/h for 10G). It also needs a physical interconnect with the CDN, which is **unknown**: Cloudflare's, for example, is listed as Enterprise-only, with no public price.
 - **CloudFront:** AWS to CloudFront is $0.00/GB. CloudFront's US list tiers start at $0.085/GB. It supports WebSockets on any distribution. Flat-rate plans include up to 50 TB, and whether WebSocket traffic fits those plans is **unknown**.
 - **Hetzner:** overage of €1 ($1.20 by Hetzner's own figure) per TB beyond the included traffic. Included traffic is 20 TB in the EU, 1 to 8 TB in the US (depending on plan), and unlimited on 1 Gbit dedicated servers.
 - **Others:** Oracle (10 TB free, then $0.0085/GB), DigitalOcean ($0.01/GiB over the pooled allowance), GCP ($0.08 to $0.12/GiB to North America).

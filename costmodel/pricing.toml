@@ -24,7 +24,7 @@ source = "AWS Price List API, AWSDirectConnect/current/us-east-1/index.json (pub
 usd_per_gb_out = 0.02
 port_1g_usd_per_hour = 0.30
 port_10g_usd_per_hour = 2.25
-note = "Needs a physical cross-connect to the CDN. Cloudflare Network Interconnect is listed as 'Enterprise-only' with no public price: UNKNOWN. Colocation and cross-connect fees: UNKNOWN."
+note = "Needs a physical cross-connect to the CDN. CDN interconnect price UNKNOWN (for example, Cloudflare Network Interconnect is listed as 'Enterprise-only' with no public price). Colocation and cross-connect fees: UNKNOWN."
 
 [aws_cloudfront]
 source = "AWS Price List API, AmazonCloudFront/current/index.json (publication 2026-10-19); flat-rate plans from aws.amazon.com/cloudfront/pricing/; WebSockets from the CloudFront developer guide"

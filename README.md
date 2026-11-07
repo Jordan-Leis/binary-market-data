@@ -68,24 +68,24 @@ Inbound traffic is free, so the outbound market data stream is the bill. [docs/c
 
 ### CPU and memory (MEASURED on one machine, SYNTHETIC inputs)
 
-Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz, 8 cores, WSL2 kernel 6.18.54.1-microsoft-standard-WSL2, load average 0.97 0.95 0.57 at start. These are serialization and copy costs, not network latency.
+Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz, 8 cores, WSL2 kernel 6.18.54.1-microsoft-standard-WSL2, load average 1.05 2.18 1.56 at start. These are serialization and copy costs, not network latency.
 
 | Per message | CPU ns |
 |---|---:|
 | Parse JSON into a generic value (what a JSON client pays) | 1,868 |
-| Transcode JSON to binary + deltas (gateway, once per message) | 1,684 |
+| Transcode JSON to binary + deltas (gateway, once per message) | 1,739 |
 | Decode binary and apply to local state (client) | 211 |
-| Decode, apply and rebuild the exact JSON text | 716 |
-| permessage-deflate, per connection | 12,224 |
-| zstd with dictionary, once per message | 1,544 |
-| Verify one order signature (secp256k1 recover, pure Rust) | 165,273 |
+| Decode, apply and rebuild the exact JSON text | 741 |
+| permessage-deflate, per connection | 13,466 |
+| zstd with dictionary, once per message | 1,615 |
+| Verify one order signature (secp256k1 recover, pure Rust) | 169,750 |
 
 | Fan-out, CPU per connection per second of feed | microseconds |
 |---|---:|
-| Binary: transcode once, copy shared bytes | 33.7 |
-| JSON as is: copy shared bytes | 92.0 |
-| permessage-deflate without context: compress once, copy | 318.2 |
-| permessage-deflate with context: compress per connection | 24,816.0 |
+| Binary: transcode once, copy shared bytes | 34.6 |
+| JSON as is: copy shared bytes | 102.2 |
+| permessage-deflate without context: compress once, copy | 366.3 |
+| permessage-deflate with context: compress per connection | 26,087.2 |
 
 Per-connection compressor state, live heap after traffic: 376 KiB for permessage-deflate with context. Binary encode-once keeps no per-connection codec state.
 
@@ -93,10 +93,10 @@ Per-connection compressor state, live heap after traffic: 376 KiB for permessage
 
 | Server | Byte-exact (7 hostile payloads, PUBLISH and SET/GET) | p50 / p99 publish-to-receive, 2000 msg/s | Pipelined ceiling, binary msgs/s |
 |---|---|---|---:|
-| Dragonfly [0;32mv2.1 | yes, all | 212 / 1009 us | 549,185 |
-| Redis 7.0.15 | yes, all | 196 / 939 us | 905,477 |
+| Dragonfly v2.1 | yes, all | 198 / 896 us | 489,360 |
+| Redis 7.0.15 | yes, all | 177 / 292 us | 744,323 |
 
-The synthetic whole feed is 1,960.0 messages per second.
+The synthetic whole feed is 1,960 messages per second.
 
 ### Decoder fuzzing
 
@@ -112,7 +112,7 @@ List prices checked 2026-11-07 are an upper bound. Bills are illustrative. Encod
 | Today: JSON over AWS egress | $1,000 | $10,000 | $30,000 |
 | Binary, full snapshots | $154 | $1,677 | $6,045 |
 | Binary + deltas (exact) | $77 | $818 | $3,028 |
-| + skip unchanged books | $47 | $467 | $1,740 |
+| + skip unchanged books (if sent today) | $47 | $467 | $1,740 |
 | + conflate books to 1 s (opt-in) | $38 | $359 | $1,348 |
 | JSON + permessage-deflate | $251 | $2,752 | $9,515 |
 | JSON + zstd dictionary | $282 | $3,097 | $10,627 |

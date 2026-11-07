@@ -5,36 +5,36 @@
     "note": "Items are connections: cpu_ns_per_item is CPU per connection per second of feed, measured with 100 connections in one thread. Socket writes are excluded; each connection's bytes are copied into its own buffer.",
     "results": {
       "binary_transcode_once_then_copy": {
-        "cpu_ns_per_item_median": 33700.0,
+        "cpu_ns_per_item_median": 34620.0,
         "items_per_run": 100,
         "runs": 7,
-        "wall_ns_max": 39725.0,
-        "wall_ns_min": 33413.0,
-        "wall_ns_per_item_median": 33698.0
+        "wall_ns_max": 37636.0,
+        "wall_ns_min": 33458.0,
+        "wall_ns_per_item_median": 34633.0
       },
       "json_as_is_copy_to_each_connection": {
-        "cpu_ns_per_item_median": 92040.0,
+        "cpu_ns_per_item_median": 102220.0,
         "items_per_run": 100,
         "runs": 7,
-        "wall_ns_max": 93676.0,
-        "wall_ns_min": 89757.0,
-        "wall_ns_per_item_median": 92057.0
+        "wall_ns_max": 123413.0,
+        "wall_ns_min": 96705.0,
+        "wall_ns_per_item_median": 102261.0
       },
       "json_pmd_context_takeover_per_connection": {
-        "cpu_ns_per_item_median": 24816050.0,
+        "cpu_ns_per_item_median": 26087240.0,
         "items_per_run": 100,
         "runs": 7,
-        "wall_ns_max": 24945490.0,
-        "wall_ns_min": 24679123.0,
-        "wall_ns_per_item_median": 24817816.0
+        "wall_ns_max": 27481903.0,
+        "wall_ns_min": 25895094.0,
+        "wall_ns_per_item_median": 26089169.0
       },
       "json_pmd_no_context_compress_once_then_copy": {
-        "cpu_ns_per_item_median": 318180.0,
+        "cpu_ns_per_item_median": 366280.0,
         "items_per_run": 100,
         "runs": 7,
-        "wall_ns_max": 331635.0,
-        "wall_ns_min": 310684.0,
-        "wall_ns_per_item_median": 318199.0
+        "wall_ns_max": 392347.0,
+        "wall_ns_min": 359168.0,
+        "wall_ns_per_item_median": 366311.0
       }
     }
   },
@@ -43,8 +43,8 @@
     "cores": "8",
     "cpu": "Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
     "kernel": "6.18.54.1-microsoft-standard-WSL2",
-    "load_avg_1_5_15_after": "1.23 1.02 0.61",
-    "load_avg_1_5_15_before": "0.97 0.95 0.57",
+    "load_avg_1_5_15_after": "1.31 2.12 1.56",
+    "load_avg_1_5_15_before": "1.05 2.18 1.56",
     "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)"
   },
   "mean_json_bytes": 335.17766065963957,
@@ -59,57 +59,57 @@
       "cpu_ns_per_item_median": 211.0,
       "items_per_run": 58820,
       "runs": 7,
-      "wall_ns_max": 213.0,
-      "wall_ns_min": 205.0,
+      "wall_ns_max": 222.0,
+      "wall_ns_min": 210.0,
       "wall_ns_per_item_median": 211.0
     },
     "decode_binary_apply_and_render_json": {
-      "cpu_ns_per_item_median": 716.0,
+      "cpu_ns_per_item_median": 741.0,
       "items_per_run": 58820,
       "runs": 7,
-      "wall_ns_max": 724.0,
-      "wall_ns_min": 704.0,
-      "wall_ns_per_item_median": 716.0
+      "wall_ns_max": 751.0,
+      "wall_ns_min": 725.0,
+      "wall_ns_per_item_median": 741.0
     },
     "pmd_compress_context_takeover": {
-      "cpu_ns_per_item_median": 12224.0,
+      "cpu_ns_per_item_median": 13466.0,
       "items_per_run": 58820,
       "runs": 7,
-      "wall_ns_max": 12332.0,
-      "wall_ns_min": 12189.0,
-      "wall_ns_per_item_median": 12224.0
+      "wall_ns_max": 13718.0,
+      "wall_ns_min": 13281.0,
+      "wall_ns_per_item_median": 13466.0
     },
     "pmd_compress_no_context_takeover": {
-      "cpu_ns_per_item_median": 14503.0,
+      "cpu_ns_per_item_median": 15544.0,
       "items_per_run": 58820,
       "runs": 7,
-      "wall_ns_max": 14679.0,
-      "wall_ns_min": 14364.0,
-      "wall_ns_per_item_median": 14504.0
+      "wall_ns_max": 15853.0,
+      "wall_ns_min": 15428.0,
+      "wall_ns_per_item_median": 15545.0
     },
     "serde_json_parse_to_value": {
       "cpu_ns_per_item_median": 1868.0,
       "items_per_run": 58820,
       "runs": 7,
-      "wall_ns_max": 1981.0,
-      "wall_ns_min": 1864.0,
-      "wall_ns_per_item_median": 1868.0
+      "wall_ns_max": 1896.0,
+      "wall_ns_min": 1836.0,
+      "wall_ns_per_item_median": 1871.0
     },
     "transcode_json_to_binary_deltas": {
-      "cpu_ns_per_item_median": 1684.0,
+      "cpu_ns_per_item_median": 1739.0,
       "items_per_run": 58820,
       "runs": 7,
-      "wall_ns_max": 1710.0,
-      "wall_ns_min": 1677.0,
-      "wall_ns_per_item_median": 1684.0
+      "wall_ns_max": 1782.0,
+      "wall_ns_min": 1731.0,
+      "wall_ns_per_item_median": 1739.0
     },
     "zstd_dictionary_compress": {
-      "cpu_ns_per_item_median": 1544.0,
+      "cpu_ns_per_item_median": 1615.0,
       "items_per_run": 58820,
       "runs": 7,
-      "wall_ns_max": 1596.0,
-      "wall_ns_min": 1538.0,
-      "wall_ns_per_item_median": 1545.0
+      "wall_ns_max": 1621.0,
+      "wall_ns_min": 1595.0,
+      "wall_ns_per_item_median": 1615.0
     }
   },
   "per_order": {
@@ -117,25 +117,25 @@
       "cpu_ns_per_item_median": 173.0,
       "items_per_run": 300,
       "runs": 7,
-      "wall_ns_max": 175.0,
+      "wall_ns_max": 202.0,
       "wall_ns_min": 173.0,
       "wall_ns_per_item_median": 174.0
     },
     "parse_json_order": {
-      "cpu_ns_per_item_median": 1710.0,
+      "cpu_ns_per_item_median": 1617.0,
       "items_per_run": 300,
       "runs": 7,
-      "wall_ns_max": 1739.0,
-      "wall_ns_min": 1667.0,
-      "wall_ns_per_item_median": 1712.0
+      "wall_ns_max": 1667.0,
+      "wall_ns_min": 1600.0,
+      "wall_ns_per_item_median": 1607.0
     },
     "verify_signature_secp256k1_recover": {
-      "cpu_ns_per_item_median": 165273.0,
+      "cpu_ns_per_item_median": 169750.0,
       "items_per_run": 300,
       "runs": 7,
-      "wall_ns_max": 166390.0,
-      "wall_ns_min": 164675.0,
-      "wall_ns_per_item_median": 165277.0
+      "wall_ns_max": 173090.0,
+      "wall_ns_min": 167886.0,
+      "wall_ns_per_item_median": 169798.0
     }
   }
 }

@@ -38,7 +38,7 @@
           "saving_vs_today_usd": 923.0837539986279
         },
         {
-          "lever": "+ skip unchanged books",
+          "lever": "+ skip unchanged books (if sent today)",
           "kind": "measured",
           "ratio": 0.03963454895536158,
           "monthly_usd": 46.765262429368015,
@@ -58,7 +58,7 @@
           "kind": "measured",
           "ratio": 0.24525273513439616,
           "monthly_usd": 250.85673357602326,
-          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~25 ms CPU per connection-second (~0.1 cores at this scale) and ~376 KiB per connection",
+          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~26 ms CPU per connection-second (~0.2 cores at this scale) and ~376 KiB per connection",
           "saving_vs_today_usd": 749.1432664239767
         },
         {
@@ -73,7 +73,7 @@
           "lever": "Direct Connect to the CDN",
           "kind": "modelled",
           "monthly_usd": 504.2473958333333,
-          "note": "$0.02/GB + 1G port + NLB; PLUS UNKNOWN Cloudflare interconnect (Enterprise-only, no public price) and colocation fees",
+          "note": "$0.02/GB + 1G port + NLB; PLUS UNKNOWN CDN interconnect cost (for example, Cloudflare Network Interconnect is Enterprise-only with no public price) and colocation fees",
           "unknown_extra": true,
           "saving_vs_today_usd": 495.7526041666666
         },
@@ -148,7 +148,7 @@
           "saving_vs_today_usd": 9181.504027974817
         },
         {
-          "lever": "+ skip unchanged books",
+          "lever": "+ skip unchanged books (if sent today)",
           "kind": "measured",
           "ratio": 0.03963454895536158,
           "monthly_usd": 466.58707759007905,
@@ -168,7 +168,7 @@
           "kind": "measured",
           "ratio": 0.24525273513439616,
           "monthly_usd": 2752.3715412642528,
-          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~25 ms CPU per connection-second (~1.7 cores at this scale) and ~376 KiB per connection",
+          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~26 ms CPU per connection-second (~1.8 cores at this scale) and ~376 KiB per connection",
           "saving_vs_today_usd": 7247.628458735746
         },
         {
@@ -183,7 +183,7 @@
           "lever": "Direct Connect to the CDN",
           "kind": "modelled",
           "monthly_usd": 3373.0006578947364,
-          "note": "$0.02/GB + 1G port + NLB; PLUS UNKNOWN Cloudflare interconnect (Enterprise-only, no public price) and colocation fees",
+          "note": "$0.02/GB + 1G port + NLB; PLUS UNKNOWN CDN interconnect cost (for example, Cloudflare Network Interconnect is Enterprise-only with no public price) and colocation fees",
           "unknown_extra": true,
           "saving_vs_today_usd": 6626.999342105262
         },
@@ -258,7 +258,7 @@
           "saving_vs_today_usd": 26971.828784412297
         },
         {
-          "lever": "+ skip unchanged books",
+          "lever": "+ skip unchanged books (if sent today)",
           "kind": "measured",
           "ratio": 0.03963454895536158,
           "monthly_usd": 1739.9562414463846,
@@ -278,7 +278,7 @@
           "kind": "measured",
           "ratio": 0.24525273513439616,
           "monthly_usd": 9514.953526641588,
-          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~25 ms CPU per connection-second (~6.7 cores at this scale) and ~376 KiB per connection",
+          "note": "bytes x0.245 (regimes 0.245-0.247); one-instrument subscribers, wire model: x0.283; costs ~26 ms CPU per connection-second (~7.0 cores at this scale) and ~376 KiB per connection",
           "saving_vs_today_usd": 20485.04647335841
         },
         {
@@ -293,7 +293,7 @@
           "lever": "Direct Connect to the CDN",
           "kind": "modelled",
           "monthly_usd": 13775.56339285714,
-          "note": "$0.02/GB + 1x10G port + NLB; PLUS UNKNOWN Cloudflare interconnect (Enterprise-only, no public price) and colocation fees",
+          "note": "$0.02/GB + 1x10G port + NLB; PLUS UNKNOWN CDN interconnect cost (for example, Cloudflare Network Interconnect is Enterprise-only with no public price) and colocation fees",
           "unknown_extra": true,
           "saving_vs_today_usd": 16224.436607142856
         },
@@ -348,6 +348,6 @@
       "digitalocean_over_pool": 10.24,
       "gcp_premium_na_10tib_plus": 81.92
     },
-    "note": "Per-TB list prices for the host of a relay tier. Matching stays in AWS, near co-located clients."
+    "note": "Per-TB list prices for the host of a relay tier. Matching is assumed to stay in AWS; only the public fan-out moves."
   }
 }

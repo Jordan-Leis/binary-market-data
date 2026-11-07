@@ -159,7 +159,7 @@ def main() -> None:
             rows.append({"lever": label, "kind": kind, "ratio": base[key], "monthly_usd": prices.aws_bill(gb * base[key]), "note": note})
         dx, port = prices.direct_connect(gb)
         rows.append({"lever": "Direct Connect to the CDN", "kind": "modelled", "monthly_usd": dx,
-                     "note": f"$0.02/GB + {port} port + NLB; PLUS UNKNOWN Cloudflare interconnect (Enterprise-only, no public price) and colocation fees", "unknown_extra": True})
+                     "note": f"$0.02/GB + {port} port + NLB; PLUS UNKNOWN CDN interconnect cost (for example, Cloudflare Network Interconnect is Enterprise-only with no public price) and colocation fees", "unknown_extra": True})
         rows.append({"lever": "CloudFront instead of current CDN", "kind": "modelled", "monthly_usd": prices.cloudfront(gb),
                      "note": "AWS to CloudFront is $0/GB; CloudFront US list tiers; replaces the CDN's WAF/DDoS role; flat-rate plans cap at 50 TB unless re-priced (UNKNOWN)"})
         relay, det = prices.relay_tier(gb, feed_gb_month)
@@ -186,7 +186,7 @@ def main() -> None:
             "digitalocean_over_pool": prices.p["digitalocean"]["usd_per_gib_over_pool"] * 1024,
             "gcp_premium_na_10tib_plus": prices.p["gcp"]["usd_per_gib"][2] * 1024,
         },
-        "note": "Per-TB list prices for the host of a relay tier. Matching stays in AWS, near co-located clients.",
+        "note": "Per-TB list prices for the host of a relay tier. Matching is assumed to stay in AWS; only the public fan-out moves.",
     }
     doc = {
         "label": "MODEL. Byte ratios measured on SYNTHETIC data; prices are public list prices checked "
