@@ -189,3 +189,7 @@ Size and cost results are deterministic. Timing and broker results depend on the
 ## AI use
 
 Claude Code (Anthropic) wrote most of the code and documentation and ran the experiments, working from a plan I approved. A separate Claude reviewer then read the repo as a skeptical interviewer would, and its findings were fixed before release. I own the design decisions: making binary exact rather than lossy, measuring against compression, relay tier and broker baselines, falling back to synthetic data when the API terms ruled out capture, and choosing what to trust in the results. Items I still need to review by hand are tracked outside this repo, and this section will be updated when that review is done.
+
+## Licence
+
+MIT, see [LICENSE](LICENSE).
